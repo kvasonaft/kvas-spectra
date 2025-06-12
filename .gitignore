@@ -1,0 +1,41 @@
+# Виртуальные среды
+venv/
+.env/
+.venv/
+
+# Кэш-компиляции Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Файлы журналов
+*.log
+
+# Конфигурации редакторов
+.vscode/
+.idea/
+
+# Файлы Jupyter Notebook checkpoint'ов
+.ipynb_checkpoints/
+
+# Базы данных SQLite
+*.sqlite3
+
+# Секреты и переменные окружения
+.env
+.env.*
+
+# Установленные зависимости
+*.egg-info/
+dist/
+build/
+
+# Файлы pytest и coverage
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Файлы OS
+.DS_Store
+Thumbs.db
