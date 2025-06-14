@@ -39,3 +39,9 @@ htmlcov/
 # Файлы OS
 .DS_Store
 Thumbs.db
+
+# Наборы данных
+*.csv
+*.json
+*.xlsx
+*.xlsm
