@@ -1,17 +1,17 @@
 import os
 import pandas as pd
 
-mode = 2
+mode = 1
 
 if mode == 1:
 
-    base_dir = '/home/kvasonaft/Development/spectra/dataset-code'
-    names_table = '/home/kvasonaft/Development/names.csv'
+    first_path = 'path'
+    names_table = 'path'
     df = pd.read_csv(names_table, sep = ';')
 
     for _, row in df.iterrows():
-        old_path = os.path.join(base_dir, row['control_name'])
-        new_path = os.path.join(base_dir, str(row['code_name']))
+        old_path = os.path.join(first_path, row['control_name'])
+        new_path = os.path.join(first_path, str(row['code_name']))
 
         try:
             if os.path.exists(old_path):
@@ -24,10 +24,10 @@ if mode == 1:
 
 elif mode == 2:
 
-    control_path = '/home/kvasonaft/Development/spectra/dataset-code'
+    second_path = 'path'
 
-    for folder in os.listdir(control_path):
-        folder_path = os.path.join(control_path, folder)
+    for folder in os.listdir(second_path):
+        folder_path = os.path.join(second_path, folder)
         if not os.path.isdir(folder_path):
             continue
 
