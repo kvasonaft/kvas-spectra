@@ -3,7 +3,7 @@ import os
 import sqlite3
 from tqdm import tqdm
 
-names = pd.read_csv('/home/kvasonaft/Development/spectra/metadata.csv', sep = ';')
+names = pd.read_excel('/home/kvasonaft/Development/spectra/metadata.xlsx')
 path = '/home/kvasonaft/Development/spectra/dataset'
 
 conn = sqlite3.connect('spectra.db')
