@@ -47,9 +47,19 @@ for sample_name, sample_data in data.items():
     results = None
 
     for col in spectra_df.columns:
+
+        res_dict = {}
+        pre_dict = {'waves': [], 'peaks': [], 'areas': []}
+
         if col == 'wavelength':
             continue
         spec = np.array(spectra_df[col].values)
-        results = peaks_finder(wave, spec, target, 25, 0.75, True)
-        result_dataframe = pd.DataFrame(results)
+        results = peaks_finder(wave, spec, target, 25, 0.7, True)
+
+        pre_dict['waves'].append(results['target'])
+        pre_dict['peaks'].append(results['height'])
+        pre_dict['areas'].append(results['area'])
+
+        result_dict[col] = pre_dict
+        break
     break

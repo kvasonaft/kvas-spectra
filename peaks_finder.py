@@ -8,10 +8,10 @@ from scipy.ndimage import median_filter
 
 def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
 
-    results = []
+    results = {'target': [], 'found_x': [], 'height': [], 'area': []}
 
     y = median_filter(y, size = 5)
-    y = savgol_filter(y, window_length = 11, polyorder = 3)
+    y = savgol_filter(y, window_length = 10, polyorder = 3)
 
     plt.figure(figsize = (12, 6))
     plt.plot(x, y, label = 'Спектр', color = 'blue')
@@ -28,7 +28,10 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
 
         if len(peaks) == 0:
             print(f'Пиков около {target} не обнаружено')
-            results.append({'target': target, 'found_x': np.nan, 'height': np.nan, 'area': np.nan})
+            results['target'].append(target)
+            results['found_x'].append(np.nan)
+            results['height'].append(np.nan)
+            results['area'].append(np.nan)
             continue
 
         best_peak_idx = peaks[np.argmax(y_win[peaks])]
@@ -40,14 +43,14 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
 
         peak_width = peak_widths(-y, [peak_global_idx], rel_height = 0.5)[0][0]
 
-        if target == 1096:
-            integration = integration * 0.6
+        if target == 1096 or target == 1240:
+            integration = integration * 0.8
         elif target == 1730:
-            integration = integration * 5
+            integration = integration * 4
         elif target == 2969:
             integration = integration * 0.35
-        elif target == 1240:
-            integration = integration * 0.75
+        elif target == 972 or target == 1016:
+            integration = integration * 1.4
 
         half_width = round(peak_width * integration)
 
@@ -65,7 +68,12 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
 
         area = trapezoid(corrected_signal, x_int)
 
-        results.append({'target': target, 'found_x': peak_x, 'height': peak_y, 'area': round(area, 2)})
+        results['target'].append(target)
+        results['found_x'].append(peak_x)
+        results['height'].append(round(peak_y, 2))
+        results['area'].append(round(-area, 2))
+        
+        # ({'target': target, 'found_x': peak_x, 'height': peak_y, 'area': round(area, 2)})
 
         plt.plot(peak_x, peak_y, 'ro')
         plt.fill_between(x_int, y_int, baseline, alpha = 0.5, color = 'red')
