@@ -50,6 +50,6 @@ for sample_name, sample_data in data.items():
         if col == 'wavelength':
             continue
         spec = np.array(spectra_df[col].values)
-        results = peaks_finder(wave, spec, target)
+        results = peaks_finder(wave, spec, target, 25, 0.75, True)
         result_dataframe = pd.DataFrame(results)
     break

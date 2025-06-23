@@ -1,12 +1,17 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import find_peaks
+from scipy.signal import find_peaks, peak_widths
 from scipy.integrate import trapezoid
+from scipy.signal import savgol_filter
+from scipy.ndimage import median_filter
 
-def peaks_finder(x, y, targets, delta = 20, plot = False):
+def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
 
     results = []
+
+    y = median_filter(y, size = 5)
+    y = savgol_filter(y, window_length = 11, polyorder = 3)
 
     plt.figure(figsize = (12, 6))
     plt.plot(x, y, label = 'Спектр', color = 'blue')
@@ -30,12 +35,24 @@ def peaks_finder(x, y, targets, delta = 20, plot = False):
         peak_x = x_win[best_peak_idx]
         peak_y = y_win[best_peak_idx]
 
-        integration_window = 10
         global_indices = np.where(mask)[0]
         peak_global_idx = global_indices[best_peak_idx]
 
-        left = max(0, peak_global_idx - integration_window)
-        right = min(len(x), peak_global_idx + integration_window)
+        peak_width = peak_widths(-y, [peak_global_idx], rel_height = 0.5)[0][0]
+
+        if target == 1096:
+            integration = integration * 0.6
+        elif target == 1730:
+            integration = integration * 5
+        elif target == 2969:
+            integration = integration * 0.35
+        elif target == 1240:
+            integration = integration * 0.75
+
+        half_width = round(peak_width * integration)
+
+        left = max(0, peak_global_idx - half_width)
+        right = min(len(x), peak_global_idx + half_width)
         
         x_int= x[left:right]
         y_int = y[left:right]
@@ -48,11 +65,10 @@ def peaks_finder(x, y, targets, delta = 20, plot = False):
 
         area = trapezoid(corrected_signal, x_int)
 
-        results.append({'target': target, 'found_x': peak_x, 'height': peak_y, 'area': area})
+        results.append({'target': target, 'found_x': peak_x, 'height': peak_y, 'area': round(area, 2)})
 
         plt.plot(peak_x, peak_y, 'ro')
-        plt.fill_between(x_int, y_int, baseline, alpha = 0.3, color = 'orange')
-
+        plt.fill_between(x_int, y_int, baseline, alpha = 0.5, color = 'red')
         plt.axvspan(target - delta, target + delta, color = 'gray', alpha = 0.15)
 
         x_text = target + delta * 0.1
