@@ -8,6 +8,9 @@ from scipy.ndimage import median_filter
 
 def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
 
+    x = np.array(x)
+    y = np.array(y)
+
     results = {'target': [], 'found_x': [], 'height': [], 'area': []}
 
     y = median_filter(y, size = 5)
@@ -27,7 +30,7 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
         peaks, _ = find_peaks(-y_win, prominence = 0.01)
 
         if len(peaks) == 0:
-            print(f'Пиков около {target} не обнаружено')
+            # print(f'Пиков около {target} не обнаружено')
             results['target'].append(target)
             results['found_x'].append(np.nan)
             results['height'].append(np.nan)

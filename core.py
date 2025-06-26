@@ -8,8 +8,8 @@ from peaks_finder import peaks_finder
 logging.basicConfig(filename = 'log.txt', level = logging.INFO)
 
 target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504,1470,  1453, 1410, 1370, 1342, 1240, 1176, 1124, 1096, 1050, 1016, 972, 929, 872, 848, 792, 771]
-
 data = None
+
 with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
     try:
         data = json.load(f)
@@ -20,46 +20,70 @@ with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
 if data is None:
     raise ValueError(f'Ошибка при загрузке файла JSON.')
 
-for sample_name, sample_data in data.items():
+for culture, data_1 in data.items():
 
-    dictionary = {}
+    for type, data_2 in data_1.items():
 
-    experiment_data = sample_data.get('Experiment', {})
-    control_data = sample_data.get('Control', {})
+        if type == 'Control':
 
-    for filename, spectrum in experiment_data.items():
-        wavelengths = spectrum['wavelength']
-        dictionary['wavelength'] = wavelengths
-        break
+            con_dict = {'wavelength': []}
+            con_area_df_rows = []
+            con_peaks_df_rows = []
 
-    for filename, spectrum in experiment_data.items():
-        absorptions_exp = spectrum['absorption']
-        dictionary[filename] = absorptions_exp
+            for sample, data_3 in data_2.items():
 
-    for filename, spectrum in control_data.items():
-        absorptions_con = spectrum['absorption']
-        dictionary[filename] = absorptions_con
+                waves = data[culture][type][sample]['wavelength']
+                absorption = data[culture][type][sample]['absorption']
 
-    spectra_df = pd.DataFrame(dictionary)
-    wave = np.array(spectra_df['wavelength'])
+                results = peaks_finder(waves, absorption, target, 25, 0.7)
 
-    result_dict = {}
-    results = None
+                area_row = {'Sample': sample}
+                for t, a in zip(results['target'], results['area']):
+                    area_row[f'{t}'] = a
+                con_area_df_rows.append(area_row)
 
-    for col in spectra_df.columns:
+                peaks_row = {'Sample': sample}
+                for t, a in zip(results['target'], results['height']):
+                    peaks_row[f'{t}'] = a
+                con_peaks_df_rows.append(peaks_row)
 
-        res_dict = {}
-        pre_dict = {'waves': [], 'peaks': [], 'areas': []}
+            con_area_df = pd.DataFrame(con_area_df_rows)
+            con_peaks_df = pd.DataFrame(con_peaks_df_rows)
 
-        if col == 'wavelength':
-            continue
-        spec = np.array(spectra_df[col].values)
-        results = peaks_finder(wave, spec, target, 25, 0.7, True)
+        elif type == 'Experiment':
 
-        pre_dict['waves'].append(results['target'])
-        pre_dict['peaks'].append(results['height'])
-        pre_dict['areas'].append(results['area'])
+            exp_dict = {'wavelength': []}
+            exp_area_df_rows = []
+            exp_peaks_df_rows = []
 
-        result_dict[col] = pre_dict
-        break
+            for sample, data_3 in data_2.items():
+
+                waves = data[culture][type][sample]['wavelength']
+                absorption = data[culture][type][sample]['absorption']
+
+                results = peaks_finder(waves, absorption, target, 25, 0.7)
+
+                area_row = {'Sample': sample}
+                for t, a in zip(results['target'], results['area']):
+                    area_row[f'{t}'] = a
+                exp_area_df_rows.append(area_row)
+
+                peaks_row = {'Sample': sample}
+                for t, a in zip(results['target'], results['height']):
+                    peaks_row[f'{t}'] = a
+                exp_peaks_df_rows.append(peaks_row)
+
+            exp_area_df = pd.DataFrame(exp_area_df_rows)
+            exp_peaks_df = pd.DataFrame(exp_peaks_df_rows)
+
+            area_full = pd.concat([con_area_df, exp_area_df], ignore_index=True)
+            peaks_full = pd.concat([con_peaks_df, exp_peaks_df], ignore_index=True)
+
+            area_full = area_full.set_index('Sample').T
+            peaks_full = peaks_full.set_index('Sample').set.T
+
+            print(area_full)
+            print(peaks_full)
+
     break
+
