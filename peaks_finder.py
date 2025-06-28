@@ -5,8 +5,9 @@ from scipy.signal import find_peaks, peak_widths
 from scipy.integrate import trapezoid
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
+from matplotlib.patches import Polygon
 
-def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
+def peaks_finder(x, y, targets, ax = None, delta = 20, integration = 1.5, plot = False, color = 'green', square = False, hatch = False, log_missing = False):
 
     x = np.array(x)
     y = np.array(y)
@@ -16,8 +17,10 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
     y = median_filter(y, size = 5)
     y = savgol_filter(y, window_length = 10, polyorder = 3)
 
-    plt.figure(figsize = (12, 6))
-    plt.plot(x, y, label = 'Спектр', color = 'blue')
+    if ax is None:
+        ax = plt.gca()    
+
+    ax.plot(x, y, color = color, linewidth = 1)
 
     for target in targets:
         mask = (x >= target - delta) & (x <= target + delta)
@@ -30,7 +33,10 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
         peaks, _ = find_peaks(-y_win, prominence = 0.01)
 
         if len(peaks) == 0:
-            # print(f'Пиков около {target} не обнаружено')
+
+            if log_missing == True:
+                print(f'Пиков около {target} не обнаружено')
+
             results['target'].append(target)
             results['found_x'].append(np.nan)
             results['height'].append(np.nan)
@@ -75,25 +81,15 @@ def peaks_finder(x, y, targets, delta = 20, integration = 1.5, plot = False):
         results['found_x'].append(peak_x)
         results['height'].append(round(peak_y, 2))
         results['area'].append(round(-area, 2))
-        
-        # ({'target': target, 'found_x': peak_x, 'height': peak_y, 'area': round(area, 2)})
 
-        plt.plot(peak_x, peak_y, 'ro')
-        plt.fill_between(x_int, y_int, baseline, alpha = 0.5, color = 'red')
-        plt.axvspan(target - delta, target + delta, color = 'gray', alpha = 0.15)
+        if hatch == True:
+            polygon = Polygon(np.column_stack((x_int, y_int)), closed = True, facecolor = 'none', edgecolor = color, hatch = '+++', alpha = 0.3)
+            ax.add_patch(polygon)
 
-        x_text = target + delta * 0.1
-        y_text = max(y[(x >= target - delta) & (x <= target + delta)]) * 1.05
-        plt.text(x_text, y_text, str(target), color = 'black', fontsize = 9, rotation = 90, verticalalignment = 'bottom')
+        if square == True:
+            ax.fill_between(x_int, y_int, baseline, alpha = 0.2, color = color)
 
-    if plot == True:
-
-        plt.xlabel("x")
-        plt.ylabel("Интенсивность")
-        plt.title("Найденные пики в заданных областях")
-        plt.legend(['Спектр', 'Найденные пики', 'Площади', 'Области поиска'])
-        plt.grid(True)
-        plt.tight_layout()
-        plt.show()
+        ax.axvspan(target - delta, target + delta, color = 'gray', alpha = 0.01)
+        ax.plot(peak_x, peak_y, 'ro', alpha = 0.7, markersize = 6)
 
     return results
