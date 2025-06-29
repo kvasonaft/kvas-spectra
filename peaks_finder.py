@@ -9,8 +9,9 @@ from matplotlib.patches import Polygon
 
 def peaks_finder(x, y, targets, ax = None, delta = 20, integration = 1.5, plot = False, color = 'green', square = False, hatch = False, log_missing = False):
 
-    x = np.array(x)
-    y = np.array(y)
+    x = np.asarray(x, dtype=float)
+    y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
+
 
     results = {'target': [], 'found_x': [], 'height': [], 'area': []}
 
