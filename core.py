@@ -91,6 +91,33 @@ for culture, data_1 in data.items():
             area_full = area_full.set_index('Sample').T
             peaks_full = peaks_full.set_index('Sample').T
 
+            print(area_full)
+            print(peaks_full)
+
+            dif_area =[]
+            dif_peaks = []
+
+            for row_name, row in area_full.iterrows():
+
+                dif_list = []
+
+                for col1 in [col for col in area_full.columns if len(col) == 8]:
+                    for col2 in [col for col in area_full.columns if len(col) == 8]:
+
+                        if np.isnan(row[col1]) or np.isnan(row[col2]):
+                            dif_list.append(np.nan)
+                        else:
+                            dif = round(abs(row[col1] - row[col2]), 2)
+                            dif_list.append(dif)
+
+                dif_array = np.array(dif_list)
+                mean_dif = np.nanmean(dif_array)
+                dif_area.append(mean_dif)
+
+
+            dif_area = pd.Series(dif_area)
+            print(dif_area)
+
     for t in target:
         ax.text(t, ax.get_ylim()[0] + 2, str(t), fontsize = 10, rotation = 90, ha = 'center', va = 'bottom')
 
@@ -105,8 +132,8 @@ for culture, data_1 in data.items():
     ax.set_title(f'Сравнительная ИК-спектрограмма культуры {culture}', fontsize = 16)
 
     plt.tight_layout()
-    plt.savefig('spectra.png', dpi = 300, bbox_inches = 'tight')
-    plt.show()
+    # plt.savefig(f'{culture}.png', dpi = 300, bbox_inches = 'tight')
+    plt.close()
 
     break
 
