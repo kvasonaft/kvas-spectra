@@ -84,13 +84,13 @@ def peaks_finder(x, y, targets, ax = None, delta = 20, integration = 1.5, plot =
         results['area'].append(round(-area, 2))
 
         if hatch == True:
-            polygon = Polygon(np.column_stack((x_int, y_int)), closed = True, facecolor = 'none', edgecolor = color, hatch = '+++', alpha = 0.3)
+            polygon = Polygon(np.column_stack((x_int, y_int)), closed = True, facecolor = 'none', edgecolor = color, hatch = '++', alpha = 0.3)
             ax.add_patch(polygon)
 
         if square == True:
             ax.fill_between(x_int, y_int, baseline, alpha = 0.2, color = color)
 
-        ax.axvspan(target - delta, target + delta, color = 'gray', alpha = 0.01)
-        ax.plot(peak_x, peak_y, 'ro', alpha = 0.7, markersize = 6)
+        ax.axvspan(target - 5, target + 5, color = 'gray', alpha = 0.01)
+        ax.plot(peak_x, peak_y, 'ro', alpha = 1, markersize = 4)
 
     return results

@@ -25,10 +25,10 @@ with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
 if data is None:
     raise ValueError(f'Ошибка при загрузке файла JSON.')
 
-area_main = {}
-peaks_main = {}
+area_main = {'Wavelength': target}
+peaks_main = {'Wavelength': target}
 
-for culture, data_1 in tqdm(data.items()):
+for culture, data_1 in tqdm(data.items(), desc = 'Обработка культур'):
 
     fig, ax = plt.subplots(figsize = (20, 10))
 
@@ -111,7 +111,7 @@ for culture, data_1 in tqdm(data.items()):
 
                 dif_array_a = np.array(dif_list_a)
                 mean_dif_a = np.nanmean(dif_array_a)
-                dif_area.append(mean_dif_a)
+                dif_area.append(round(mean_dif_a, 2))
 
             for row_name, row in peaks_full.iterrows():
 
@@ -128,7 +128,7 @@ for culture, data_1 in tqdm(data.items()):
 
                 dif_array_p = np.array(dif_list_p)
                 mean_dif_p = np.nanmean(dif_array_p)
-                dif_peaks.append(mean_dif_p)
+                dif_peaks.append(round(mean_dif_p, 2))
 
             dif_peaks = pd.Series(dif_peaks)
             dif_area = pd.Series(dif_area)
@@ -145,9 +145,9 @@ for culture, data_1 in tqdm(data.items()):
     ]
 
     ax.legend(custom_lines, ['Контроль', 'Эксперимент'], loc = 'lower right', fontsize = 14, frameon = False)
-    ax.set_xlabel('Длина волны, нм', fontsize = 14)
-    ax.set_ylabel('Пропускание, %', fontsize = 14)
-    ax.set_title(f'Сравнительная ИК-спектрограмма культуры {culture}', fontsize = 16)
+    ax.set_xlabel('Длина волны, нм', fontsize = 16)
+    ax.set_ylabel('Пропускание, %', fontsize = 16)
+    ax.set_title(f'Сравнительная ИК-спектрограмма культуры {culture}', fontsize = 18)
 
     plt.tight_layout()
     # plt.savefig(f'{culture}.png', dpi = 300, bbox_inches = 'tight')
@@ -156,4 +156,5 @@ for culture, data_1 in tqdm(data.items()):
 peaks_main = pd.DataFrame(peaks_main)
 area_main = pd.DataFrame(area_main)
 
-peaks_main.to_csv('peaks_main.csv')
+peaks_main.to_csv('peaks_main.csv', index = False)
+area_main.to_csv('area_main.csv', index = False)
