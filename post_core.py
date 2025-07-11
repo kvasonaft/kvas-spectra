@@ -31,6 +31,40 @@ for  idx, table in tqdm(enumerate([area, peaks]), desc = 'Обработка т�
     pca_df = pd.DataFrame(data_pca, columns = ['PC1', 'PC2'], index = table.index)
     pca_df['cluster'] = kmeans.labels_
 
+    loadings = pca.components_.T * np.sqrt(pca.explained_variance_)
+
+    plt.figure(figsize=(8, 8))
+    plt.axhline(0, color='gray', lw=1)
+    plt.axvline(0, color='gray', lw=1)
+
+    circle = plt.Circle((0,0), 1, color='black', fill=False)
+    plt.gca().add_artist(circle)
+
+    for i, var in enumerate(table.columns):
+        plt.arrow(0, 0, loadings[i,0], loadings[i,1],
+                color='b', alpha=0.7, head_width=0.03)
+        plt.text(loadings[i,0]*1.1, loadings[i,1]*1.1, var,
+                color='r', ha='center', va='center')
+
+    plt.xlabel(f"1-я главная компонента ({pca.explained_variance_ratio_[0]*100:.1f}% дисперсии)")
+    plt.ylabel(f"2-я главная компонента ({pca.explained_variance_ratio_[1]*100:.1f}% дисперсии)")
+
+    if idx == 0:
+        plt.title("Корреляционный круг переменных (по площадям пиков)")
+    else:
+        plt.title("Корреляционный круг переменных (по значениям пиков)")
+
+    plt.xlim(-1.1, 1.1)
+    plt.ylim(-1.1, 1.1)
+    plt.grid(True)
+
+    if idx == 1:
+        plt.savefig('circle_by_peaks.png', dpi = 600, bbox_inches = 'tight')
+    else:
+        plt.savefig('circle_by_area.png', dpi = 600, bbox_inches = 'tight')
+
+    plt.close()
+
     texts = []
 
     if idx == 1:
@@ -65,8 +99,6 @@ for  idx, table in tqdm(enumerate([area, peaks]), desc = 'Обработка т�
         plt.savefig('pca_by_area.png', dpi = 600, bbox_inches = 'tight')
 
     plt.close()
-
-
 
     linked = linkage(table, method = 'ward', metric = 'euclidean')
     plt.figure(figsize = (15, 10))

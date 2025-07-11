@@ -27,6 +27,8 @@ if data is None:
 
 area_main = {'Wavelength': target}
 peaks_main = {'Wavelength': target}
+area_indicator = {}
+peaks_indicator = {}
 
 for culture, data_1 in tqdm(data.items(), desc = 'Обработка культур'):
 
@@ -47,7 +49,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                 waves = data[culture][type][sample]['wavelength']
                 absorption = data[culture][type][sample]['absorption']
 
-                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'orange')
+                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'orange', plot = True)
 
                 area_row = {'Sample': sample}
                 for t, a in zip(results['target'], results['area']):
@@ -72,7 +74,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                 waves = data[culture][type][sample]['wavelength']
                 absorption = data[culture][type][sample]['absorption']
 
-                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'black')
+                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'black', plot = True)
 
                 area_row = {'Sample': sample}
                 for t, a in zip(results['target'], results['area']):
@@ -130,11 +132,17 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                 mean_dif_p = np.nanmean(dif_array_p)
                 dif_peaks.append(round(mean_dif_p, 2))
 
+            indicator_peaks = int(round(np.nanmean(np.array(dif_peaks)), 0))
+            indicator_area = int(round(np.nanmean(np.array(dif_area)), 0))
+
             dif_peaks = pd.Series(dif_peaks)
             dif_area = pd.Series(dif_area)
 
-            peaks_main[culture] = dif_peaks
-            area_main[culture] = dif_area
+            peaks_main[f'{culture}({indicator_peaks})'] = dif_peaks
+            area_main[f'{culture}({indicator_peaks})'] = dif_area
+
+            peaks_indicator[f'{culture}({indicator_peaks})'] = indicator_peaks
+            area_indicator[f'{culture}({indicator_area})'] = indicator_area
 
     for t in target:
         ax.text(t, ax.get_ylim()[0] + 2, str(t), fontsize = 10, rotation = 90, ha = 'center', va = 'bottom')
@@ -150,11 +158,16 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
     ax.set_title(f'Сравнительная ИК-спектрограмма культуры {culture}', fontsize = 18)
 
     plt.tight_layout()
-    # plt.savefig(f'{culture}.png', dpi = 300, bbox_inches = 'tight')
+    plt.savefig(f'/home/kvasonaft/Development/graphs/{culture}.png', dpi = 300, bbox_inches = 'tight')
     plt.close()
 
 peaks_main = pd.DataFrame(peaks_main)
 area_main = pd.DataFrame(area_main)
 
-peaks_main.to_csv('peaks_main.csv', index = False)
-area_main.to_csv('area_main.csv', index = False)
+peaks_indicator = pd.DataFrame.from_dict(peaks_indicator, orient='index', columns=['Indicator'])
+area_indicator = pd.DataFrame.from_dict(area_indicator, orient='index', columns=['Indicator'])
+
+peaks_main.to_csv('peaks_main.csv', index=False)
+area_main.to_csv('area_main.csv', index=False)
+peaks_indicator.to_csv('peaks_indicator.csv')
+area_indicator.to_csv('area_indicator.csv')
