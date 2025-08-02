@@ -62,4 +62,4 @@ ax2.set_ylabel('Время экспонирования, сутки')
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig('correlation.png', dpi = 600)
+plt.savefig('/home/kvasonaft/Development/graphs/correlation.png', dpi = 600)

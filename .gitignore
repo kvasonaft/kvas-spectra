@@ -46,9 +46,9 @@ Thumbs.db
 *.json
 *.xlsx
 *.xlsm
+*.txt
 *.db
 
 # Графики
-
 *.png
 *.jpg

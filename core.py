@@ -49,7 +49,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                 waves = data[culture][type][sample]['wavelength']
                 absorption = data[culture][type][sample]['absorption']
 
-                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'orange', plot = True)
+                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'orange', plot = True, square = True)
 
                 area_row = {'Sample': sample}
                 for t, a in zip(results['target'], results['area']):
@@ -74,7 +74,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                 waves = data[culture][type][sample]['wavelength']
                 absorption = data[culture][type][sample]['absorption']
 
-                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'black', plot = True)
+                results = peaks_finder(waves, absorption, target, delta = 25, integration = 0.7, ax = ax, color = 'black', plot = True, square=True)
 
                 area_row = {'Sample': sample}
                 for t, a in zip(results['target'], results['area']):

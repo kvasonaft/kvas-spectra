@@ -93,4 +93,6 @@ def peaks_finder(x, y, targets, ax = None, delta = 20, integration = 1.5, plot =
         ax.axvspan(target - 5, target + 5, color = 'gray', alpha = 0.01)
         ax.plot(peak_x, peak_y, 'ro', alpha = 1, markersize = 4)
 
+    plt.show()
+
     return results

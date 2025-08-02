@@ -59,9 +59,9 @@ for  idx, table in tqdm(enumerate([area, peaks]), desc = 'Обработка т�
     plt.grid(True)
 
     if idx == 1:
-        plt.savefig('circle_by_peaks.png', dpi = 600, bbox_inches = 'tight')
+        plt.savefig('/home/kvasonaft/Development/graphs/circle_by_peaks.png', dpi = 600, bbox_inches = 'tight')
     else:
-        plt.savefig('circle_by_area.png', dpi = 600, bbox_inches = 'tight')
+        plt.savefig('/home/kvasonaft/Development/graphs/circle_by_area.png', dpi = 600, bbox_inches = 'tight')
 
     plt.close()
 
@@ -94,9 +94,9 @@ for  idx, table in tqdm(enumerate([area, peaks]), desc = 'Обработка т�
     plt.ylabel(f'Вторая главная компонента ({pca.explained_variance_ratio_[1] * 100:.2f}%)', fontsize = 12)
 
     if idx == 1:
-        plt.savefig('pca_by_peaks.png', dpi = 600, bbox_inches = 'tight')
+        plt.savefig('/home/kvasonaft/Development/graphs/pca_by_peaks.png', dpi = 600, bbox_inches = 'tight')
     else:
-        plt.savefig('pca_by_area.png', dpi = 600, bbox_inches = 'tight')
+        plt.savefig('/home/kvasonaft/Development/graphs/pca_by_area.png', dpi = 600, bbox_inches = 'tight')
 
     plt.close()
 
@@ -118,9 +118,9 @@ for  idx, table in tqdm(enumerate([area, peaks]), desc = 'Обработка т�
     plt.tight_layout()
 
     if idx == 1:
-        plt.savefig('dendrogram_by_peaks.png', dpi = 600, bbox_inches = 'tight')
+        plt.savefig('/home/kvasonaft/Development/graphs/dendrogram_by_peaks.png', dpi = 600, bbox_inches = 'tight')
     else:
-        plt.savefig('dendrogram_by_area.png', dpi = 600, bbox_inches = 'tight')
+        plt.savefig('/home/kvasonaft/Development/graphs/dendrogram_by_area.png', dpi = 600, bbox_inches = 'tight')
 
     plt.close()
 
