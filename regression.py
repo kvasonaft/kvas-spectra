@@ -1,6 +1,7 @@
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
@@ -45,21 +46,29 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize = (10, 6))
 y_peaks_test = y_peaks_test.values
 y_area_test = y_area_test.values
 
-idx_peaks = X_peaks_test[:, 0].argsort()
-ax1.scatter(X_peaks, y, color = 'orange', label = 'Экспериментальные данные')
-ax1.plot(X_peaks_test[idx_peaks], y_peaks_pred[idx_peaks], color = 'green', label = f'Модель линейной регрессии, R^2 = {r2_peaks}')
+# Для X_peaks
+X_peaks_full = np.linspace(X_peaks.min(), X_peaks.max(), 500).reshape(-1, 1)
+y_peaks_full_pred = model_peaks.predict(X_peaks_full)
+
+ax1.scatter(X_peaks, y, color='orange', label='Экспериментальные данные')
+ax1.plot(X_peaks_full, y_peaks_full_pred, color='green',
+         label=f'Модель линейной регрессии, R² = {r2_peaks}')
 ax1.set_title('Интегральный показатель по значениям пиков')
 ax1.set_xlabel('Значение интегрального показателя')
 ax1.set_ylabel('Время экспонирования, сутки')
 ax1.legend()
 
-idx_area = X_area_test[:, 0].argsort()
-ax2.scatter(X_area, y, color = 'orange', label = 'Экспериментальные данные')
-ax2.plot(X_area_test[idx_area], y_area_pred[idx_area], color = 'green', label = f'Модель линейной регрессии, R^2 = {r2_area}')
+# Для X_area
+X_area_full = np.linspace(X_area.min(), X_area.max(), 500).reshape(-1, 1)
+y_area_full_pred = model_area.predict(X_area_full)
+
+ax2.scatter(X_area, y, color='orange', label='Экспериментальные данные')
+ax2.plot(X_area_full, y_area_full_pred, color='green',
+         label=f'Модель линейной регрессии, R² = {r2_area}')
 ax2.set_title('Интегральный показатель по площадям пиков')
 ax2.set_xlabel('Значение интегрального показателя')
 ax2.set_ylabel('Время экспонирования, сутки')
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig('/home/kvasonaft/Development/graphs/correlation.png', dpi = 600)
+plt.savefig('/home/kvasonaft/Development/graphs/regression.png', dpi = 600)
