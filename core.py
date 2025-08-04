@@ -7,15 +7,17 @@ import peaks_finder_2
 from matplotlib.lines import Line2D
 import warnings
 from tqdm import tqdm
+import time
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-logging.basicConfig(filename = 'log.txt', level = logging.INFO)
+logging.basicConfig(filename = 'log.txt', filemode = 'w', format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
 
 target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1124, 1096, 1050, 1016, 972, 929, 872, 848, 792, 771]
 
 data = None
 
+start_time = time.time()
 logging.info('Программа запущена.')
 
 with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
@@ -37,6 +39,8 @@ logging.info('Запуск главного цикла обработки дан
 
 for culture, data_1 in tqdm(data.items(), desc = 'Обработка культур'):
 
+    logging.info(f'Обработка культуры {culture}')
+
     fig, ax = plt.subplots(figsize = (20, 10))
 
     for type, data_2 in data_1.items():
@@ -44,7 +48,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
         try:
 
             if type not in ['Control', 'Experiment']:
-                logging.info(f'Обнаружен образец без контрольной или экспериментальной метки в культуре {culture}')
+                logging.warning(f'Обнаружен образец без контрольной или экспериментальной метки в культуре {culture}')
                 continue
 
             if type == 'Control':
@@ -194,4 +198,7 @@ try:
 except Exception as e:
     logging.info(f'При сохранении данных произошла ошибка: {e}')
 
-logging.info('Работа программы завершена успешно.')
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+logging.info(f'Работа программы завершена успешно. Время выполнения: {elapsed_time:.2f} с.')
