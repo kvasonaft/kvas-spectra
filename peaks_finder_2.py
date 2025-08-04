@@ -6,6 +6,7 @@ from scipy.integrate import trapezoid
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
 from matplotlib.patches import Polygon
+import logging
 
 def find_nearest(main_idx, side_indices):
 
@@ -40,7 +41,7 @@ def find_nearest(main_idx, side_indices):
 
     return left_idx, right_idx
 
-def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=150, yellow_dots = True, color='green', square=False, hatch=False, logging=False):
+def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = True, color='green', square=False, hatch=False, log=False):
 
     """
     Находит пики (локальные минимумы) вблизи заданных целевых значений и рассчитывает площади под ними методом трапеций.
@@ -97,8 +98,8 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=150, yellow_dots
         y_win = y[mask]
 
         if len(x_win) == 0:
-            if logging:
-                print(f'Окно пустое около {target}')
+            if log:
+                logging.warning(f'Окно пустое около {target}')
             results['target'].append(target)
             results['found_x'].append(np.nan)
             results['height'].append(np.nan)
@@ -108,8 +109,8 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=150, yellow_dots
         peaks, _ = find_peaks(-y_win, prominence=0.01)
 
         if len(peaks) == 0:
-            if logging:
-                print(f'Пиков около {target} не обнаружено')
+            if log:
+                logging.info(f'Пиков около {target} не обнаружено')
             results['target'].append(target)
             results['found_x'].append(np.nan)
             results['height'].append(np.nan)
@@ -132,8 +133,8 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=150, yellow_dots
         side_peaks_indices = np.asarray(side_peaks).flatten()
 
         if len(side_peaks_indices) == 0:
-            if logging:
-                print(f'Боковых максимумов не найдено около {target}')
+            if log:
+                logging.info(f'Боковых максимумов не найдено около {target}')
             results['target'].append(target)
             results['found_x'].append(peak_x)
             results['height'].append(round(peak_y, 2))
@@ -152,6 +153,7 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=150, yellow_dots
                 ax.plot(x[right_side], y[right_side], 'yo', markersize=4)
 
         if left_side is None or right_side is None:
+            logging.warning(f'Площадь около {target} невозможно рассчитать')
             results['target'].append(target)
             results['found_x'].append(peak_x)
             results['height'].append(round(peak_y, 2))
