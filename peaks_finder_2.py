@@ -41,7 +41,7 @@ def find_nearest(main_idx, side_indices):
 
     return left_idx, right_idx
 
-def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = True, color='green', square=False, hatch=False, log=False):
+def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = False, color='green', square=False, hatch=False, log=False):
 
     """
     Находит пики (локальные минимумы) вблизи заданных целевых значений и рассчитывает площади под ними методом трапеций.
