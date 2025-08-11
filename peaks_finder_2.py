@@ -7,6 +7,7 @@ from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
 from scipy.signal import medfilt
 from matplotlib.patches import Polygon
+import normalization
 import logging
 
 def find_nearest(main_idx, side_indices):
@@ -94,10 +95,13 @@ def peaks_finder_2(x, y, targets, ax=None, delta=30, side_delta=300, yellow_dots
     y = median_filter(y, size=5)
     y = savgol_filter(y, window_length=11, polyorder=3)
 
+    y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=False)
+
     if ax is None:
         ax = plt.gca()
 
     ax.plot(x, y, color=color, linewidth=1)
+    ax.plot(x, np.full_like(x, 100))
 
     for target in targets:
         mask = (x >= target - delta) & (x <= target + delta)
