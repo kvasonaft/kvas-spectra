@@ -5,6 +5,7 @@ from scipy.signal import find_peaks
 from scipy.integrate import trapezoid
 from scipy.signal import savgol_filter
 from scipy.ndimage import median_filter
+from scipy.signal import medfilt
 from matplotlib.patches import Polygon
 import logging
 
@@ -41,7 +42,13 @@ def find_nearest(main_idx, side_indices):
 
     return left_idx, right_idx
 
-def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = False, color='green', square=False, hatch=False, log=False):
+def append_result(results, target, peak_x=np.nan, peak_y=np.nan, area=np.nan):
+    results['target'].append(target)
+    results['found_x'].append(peak_x)
+    results['height'].append(round(peak_y, 2) if not np.isnan(peak_y) else np.nan)
+    results['area'].append(round(area, 2) if not np.isnan(area) else np.nan)
+
+def peaks_finder_2(x, y, targets, ax=None, delta=30, side_delta=300, yellow_dots = False, color='green', square=False, hatch=False, log=False, baseline_type='linear', prominence=0.01):
 
     """
     Находит пики (локальные минимумы) вблизи заданных целевых значений и рассчитывает площади под ними методом трапеций.
@@ -100,24 +107,18 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         if len(x_win) == 0:
             if log:
                 logging.warning(f'Окно пустое около {target}')
-            results['target'].append(target)
-            results['found_x'].append(np.nan)
-            results['height'].append(np.nan)
-            results['area'].append(np.nan)
+                append_result(results, target, peak_x, peak_y, np.nan)
             continue
 
-        peaks, _ = find_peaks(-y_win, prominence=0.01)
+        peaks, _ = find_peaks(-y_win, prominence=prominence)
 
         if len(peaks) == 0:
             if log:
                 logging.info(f'Пиков около {target} не обнаружено')
-            results['target'].append(target)
-            results['found_x'].append(np.nan)
-            results['height'].append(np.nan)
-            results['area'].append(np.nan)
+                append_result(results, target, peak_x, peak_y, np.nan)
             continue
 
-        best_peak_idx = peaks[np.argmax(y_win[peaks])]
+        best_peak_idx = peaks[np.argmin(y_win[peaks])]
         peak_x = x_win[best_peak_idx]
         peak_y = y_win[best_peak_idx]
         peak_global_idx = np.argmin(np.abs(x - peak_x))
@@ -129,16 +130,13 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         x_side_win = x[side_mask]
         y_side_win = y[side_mask]
 
-        side_peaks, _ = find_peaks(y_side_win, prominence=0.01)
+        side_peaks, _ = find_peaks(y_side_win, prominence=prominence)
         side_peaks_indices = np.asarray(side_peaks).flatten()
 
         if len(side_peaks_indices) == 0:
             if log:
                 logging.info(f'Боковых максимумов не найдено около {target}')
-            results['target'].append(target)
-            results['found_x'].append(peak_x)
-            results['height'].append(round(peak_y, 2))
-            results['area'].append(np.nan)
+                append_result(results, target, peak_x, peak_y, np.nan)
             continue
 
         side_global_indices = np.where(side_mask)[0][side_peaks_indices]
@@ -154,35 +152,30 @@ def peaks_finder_2(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
         if left_side is None or right_side is None:
             logging.warning(f'Площадь около {target} невозможно рассчитать')
-            results['target'].append(target)
-            results['found_x'].append(peak_x)
-            results['height'].append(round(peak_y, 2))
-            results['area'].append(np.nan)
+            append_result(results, target, peak_x, peak_y, np.nan)
             continue
 
         left = left_side
         right = right_side
 
         if left >= right:
-            results['target'].append(target)
-            results['found_x'].append(peak_x)
-            results['height'].append(round(peak_y, 2))
-            results['area'].append(np.nan)
+            append_result(results, target, peak_x, peak_y, np.nan)
             continue
 
         x_int = x[left:right]
         y_int = y[left:right]
 
-        baseline = np.linspace(y_int[0], y_int[-1], len(y_int))
+        if baseline_type == 'linear':
+            baseline = np.linspace(y_int[0], y_int[-1], len(y_int))
+        elif baseline_type == 'horizontal':
+            baseline = np.full_like(y_int, min(y_int[0], y_int[-1]))
+
         corrected_signal = baseline - y_int
         corrected_signal[corrected_signal < 0] = 0
 
         area = trapezoid(corrected_signal, x_int)
 
-        results['target'].append(target)
-        results['found_x'].append(peak_x)
-        results['height'].append(round(peak_y, 2))
-        results['area'].append(round(-area, 2))
+        append_result(results, target, peak_x, peak_y, area)
 
         if hatch:
             polygon = Polygon(np.column_stack((x_int, y_int)), closed=True, facecolor='none', edgecolor=color, hatch='++', alpha=0.3)
