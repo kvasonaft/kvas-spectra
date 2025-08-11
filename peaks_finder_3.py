@@ -4,10 +4,10 @@ import numpy as np
 from scipy.signal import find_peaks
 from scipy.integrate import trapezoid
 from scipy.signal import savgol_filter
-from scipy.ndimage import median_filter
 from matplotlib.patches import Polygon
 from pybaselines import Baseline
 import logging
+import normalization
 
 def find_nearest(main_idx, side_indices):
 
@@ -53,15 +53,17 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
     x = np.asarray(x, dtype=float)
     y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
 
+    y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=False)
+
     y = -y
 
     results = {'target': [], 'found_x': [], 'height': [], 'area': []}
 
     baseline_fitter = Baseline(x_data=x)
         
-    if plot:
-        if ax is None:
-            ax = plt.gca()
+    # if plot:
+    if ax is None:
+        ax = plt.gca()
 
     if baseline == 'modpoly':
         bl_1, _ = baseline_fitter.modpoly(y, poly_order=3)
@@ -82,10 +84,10 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
     y = y + abs(np.min(y))
 
-    if plot:
-        ax.plot(x, y, color=color, linewidth=1)
-        if zero:
-            ax.plot(np.linspace(450, 4000, len(x)), np.zeros(len(x)))
+    # if plot:
+    ax.plot(x, y, color=color, linewidth=1)
+    if zero:
+        ax.plot(np.linspace(450, 4000, len(x)), np.zeros(len(x)))
 
     for target in targets:
         mask = (x >= target - delta) & (x <= target + delta)
@@ -111,9 +113,9 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         peak_y = y_win[best_peak_idx]
         peak_global_idx = np.argmin(np.abs(x - peak_x))
 
-        if plot:
-            ax.axvspan(target - 5, target + 5, color='gray', alpha=0.01)
-            ax.plot(peak_x, peak_y, 'ro', alpha=1, markersize=4)
+        # if plot:
+        ax.axvspan(target - 5, target + 5, color='gray', alpha=0.01)
+        ax.plot(peak_x, peak_y, 'ro', alpha=1, markersize=4)
 
         side_mask = (x >= peak_x - side_delta) & (x <= peak_x + side_delta)
         x_side_win = x[side_mask]
@@ -131,12 +133,12 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         side_global_indices = np.where(side_mask)[0][side_peaks_indices]
         left_side, right_side = find_nearest(peak_global_idx, side_global_indices)
 
-        if plot:
-            if yellow_dots:
-                if left_side is not None and 0 <= left_side < len(x):
-                    ax.plot(x[left_side], y[left_side], 'yo', markersize=4)
-                if right_side is not None and 0 <= right_side < len(x):
-                    ax.plot(x[right_side], y[right_side], 'yo', markersize=4)
+        # if plot:
+        if yellow_dots:
+            if left_side is not None and 0 <= left_side < len(x):
+                ax.plot(x[left_side], y[left_side], 'yo', markersize=4)
+            if right_side is not None and 0 <= right_side < len(x):
+                ax.plot(x[right_side], y[right_side], 'yo', markersize=4)
 
         if left_side is None or right_side is None:
             logging.warning(f'Площадь около {target} невозможно рассчитать')
@@ -167,15 +169,14 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
         append_result(results, target, peak_x, peak_y, area)
 
-        if plot:
-            if hatch:
-                polygon = Polygon(np.column_stack((x_int, y_int)), closed=True, facecolor='none', edgecolor=color, hatch='++', alpha=0.3)
-                ax.add_patch(polygon)
-            if square:
-                ax.fill_between(x_int, y_int, baseline, alpha=0.2, color=color)
+        # if plot:
+        if hatch:
+            polygon = Polygon(np.column_stack((x_int, y_int)), closed=True, facecolor='none', edgecolor=color, hatch='++', alpha=0.3)
+            ax.add_patch(polygon)
+        if square:
+            ax.fill_between(x_int, y_int, baseline, alpha=0.2, color=color)
 
-    if plot:
-        plt.show()
-        # plt.close()
+    # if plot:
+        # plt.show()
 
     return results
