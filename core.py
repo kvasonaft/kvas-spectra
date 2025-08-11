@@ -32,6 +32,7 @@ if data is None:
 
 area_main = {'Wavelength': target}
 peaks_main = {'Wavelength': target}
+
 area_indicator = {}
 peaks_indicator = {}
 
