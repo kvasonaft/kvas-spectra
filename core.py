@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 logging.basicConfig(filename = 'log.txt', filemode = 'w', format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
 
-target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1124, 1096, 1050, 1016, 972, 929, 872, 848, 792, 771]
+target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016, 972, 872, 848, 792]
 
 data = None
 
