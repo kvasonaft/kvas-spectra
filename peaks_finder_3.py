@@ -46,14 +46,18 @@ def append_result(results, target, peak_x=np.nan, peak_y=np.nan, area=np.nan):
     results['target'].append(target)
     results['found_x'].append(peak_x)
     results['height'].append(round(peak_y, 2) if not np.isnan(peak_y) else np.nan)
-    results['area'].append(round(area, 2) if not np.isnan(area) else np.nan)
+    results['area'].append(round(area, 2) if not np.isnan(area) else None)
 
-def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = False, color='green', square=False, hatch=False, log=False, baseline_square='linear', prominence=0.01, baseline='snip', plot=False, savgol_window=11, zero=False):
+def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = False, color='green', square=False, hatch=False, log=False, baseline_square='linear', prominence=0.01, baseline_primary='snip', plot=False, savgol_window=11, zero=False, positive_peaks=True):
+
+    area = None
 
     x = np.asarray(x, dtype=float)
     y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
 
-    y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=False)
+    y = savgol_filter(y, window_length=savgol_window, polyorder=3)
+
+    y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=positive_peaks, min_max=True)
 
     y = -y
 
@@ -61,33 +65,34 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
     baseline_fitter = Baseline(x_data=x)
         
-    # if plot:
-    if ax is None:
-        ax = plt.gca()
+    if plot:
+        if ax is None:
+            ax = plt.gca()
 
-    if baseline == 'modpoly':
+    if baseline_primary == 'modpoly':
         bl_1, _ = baseline_fitter.modpoly(y, poly_order=3)
         # ax.plot(x, bl_1, color='blue', linewidth=1, label='modpoly')
-    elif baseline == 'asls':
+    elif baseline_primary == 'asls':
         bl_2, _ = baseline_fitter.asls(y, lam=1e7, p=0.02)
         # ax.plot(x, bl_2, color='blue', linewidth=1, label='asls')
-    elif baseline == 'mor':
+    elif baseline_primary == 'mor':
         bl_3, _ = baseline_fitter.mor(y, half_window=30)
         # ax.plot(x, bl_3, color='blue', linewidth=1, label='mor')
-    elif baseline == 'snip':
+    elif baseline_primary == 'snip':
         bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
         # ax.plot(x, bl_4, color='blue', linewidth=1, label='snip')
-
-    y = savgol_filter(y, window_length=savgol_window, polyorder=3)
 
     y = y - bl_4
 
     y = y + abs(np.min(y))
 
-    # if plot:
-    ax.plot(x, y, color=color, linewidth=1)
-    if zero:
-        ax.plot(np.linspace(450, 4000, len(x)), np.zeros(len(x)))
+    if plot:
+        ax.plot(x, y, color=color, linewidth=1)
+        if zero:
+            ax.plot(np.linspace(450, 4000, len(x)), np.zeros(len(x)))
+
+    # prominence = prominence * (np.max(y) - np.min(y))
+    prominence = None
 
     for target in targets:
         mask = (x >= target - delta) & (x <= target + delta)
@@ -97,7 +102,7 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         if len(x_win) == 0:
             if log:
                 logging.warning(f'Окно пустое около {target}')
-                append_result(results, target, peak_x, peak_y, np.nan)
+                append_result(results, target, peak_x, peak_y, area)
             continue
 
         peaks, _ = find_peaks(y_win, prominence=prominence)
@@ -105,7 +110,7 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         if len(peaks) == 0:
             if log:
                 logging.info(f'Пиков около {target} не обнаружено')
-                append_result(results, target, peak_x, peak_y, np.nan)
+                append_result(results, target, peak_x, peak_y, area)
             continue
 
         best_peak_idx = peaks[np.argmax(y_win[peaks])]
@@ -113,9 +118,9 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         peak_y = y_win[best_peak_idx]
         peak_global_idx = np.argmin(np.abs(x - peak_x))
 
-        # if plot:
-        ax.axvspan(target - 5, target + 5, color='gray', alpha=0.01)
-        ax.plot(peak_x, peak_y, 'ro', alpha=1, markersize=4)
+        if plot:
+            ax.axvspan(target - 5, target + 5, color='gray', alpha=0.01)
+            ax.plot(peak_x, peak_y, 'ro', alpha=1, markersize=4)
 
         side_mask = (x >= peak_x - side_delta) & (x <= peak_x + side_delta)
         x_side_win = x[side_mask]
@@ -127,29 +132,29 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         if len(side_peaks_indices) == 0:
             if log:
                 logging.info(f'Боковых максимумов не найдено около {target}')
-                append_result(results, target, peak_x, peak_y, np.nan)
+                append_result(results, target, peak_x, peak_y, area)
             continue
 
         side_global_indices = np.where(side_mask)[0][side_peaks_indices]
         left_side, right_side = find_nearest(peak_global_idx, side_global_indices)
 
-        # if plot:
-        if yellow_dots:
-            if left_side is not None and 0 <= left_side < len(x):
-                ax.plot(x[left_side], y[left_side], 'yo', markersize=4)
-            if right_side is not None and 0 <= right_side < len(x):
-                ax.plot(x[right_side], y[right_side], 'yo', markersize=4)
+        if plot:
+            if yellow_dots:
+                if left_side is not None and 0 <= left_side < len(x):
+                    ax.plot(x[left_side], y[left_side], 'yo', markersize=4)
+                if right_side is not None and 0 <= right_side < len(x):
+                    ax.plot(x[right_side], y[right_side], 'yo', markersize=4)
 
         if left_side is None or right_side is None:
             logging.warning(f'Площадь около {target} невозможно рассчитать')
-            append_result(results, target, peak_x, peak_y, np.nan)
+            append_result(results, target, peak_x, peak_y, area)
             continue
 
         left = left_side
         right = right_side
 
         if left >= right:
-            append_result(results, target, peak_x, peak_y, np.nan)
+            append_result(results, target, peak_x, peak_y, area)
             continue
 
         x_int = x[left:right]
@@ -162,21 +167,18 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
         elif baseline_square == 'horizontal_full':
             baseline = np.full_like(y_int, 0)
 
-        corrected_signal = baseline - y_int
+        corrected_signal = y_int - baseline
         corrected_signal[corrected_signal < 0] = 0
 
-        area = trapezoid(corrected_signal, x_int)
+        area = -trapezoid(corrected_signal, x_int)
 
         append_result(results, target, peak_x, peak_y, area)
 
-        # if plot:
-        if hatch:
-            polygon = Polygon(np.column_stack((x_int, y_int)), closed=True, facecolor='none', edgecolor=color, hatch='++', alpha=0.3)
-            ax.add_patch(polygon)
-        if square:
-            ax.fill_between(x_int, y_int, baseline, alpha=0.2, color=color)
-
-    # if plot:
-        # plt.show()
+        if plot:
+            if hatch:
+                polygon = Polygon(np.column_stack((x_int, y_int)), closed=True, facecolor='none', edgecolor=color, hatch='++', alpha=0.3)
+                ax.add_patch(polygon)
+            if square:
+                ax.fill_between(x_int, y_int, baseline, alpha=0.2, color=color)
 
     return results
