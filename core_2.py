@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 logging.basicConfig(filename = 'log.txt', filemode = 'w', format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
 
-target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1124, 1096, 1050, 1016, 972, 929, 872, 848, 792, 771]
+target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016, 972, 872, 848, 792]
 
 data = None
 
@@ -62,7 +62,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                     waves = data[culture][type][sample]['wavelength']
                     absorption = data[culture][type][sample]['absorption']
 
-                    results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='orange', plot=True, square=True)
+                    results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='black', plot=True, square=True, baseline_square='horizontal_full', savgol_window=21)
 
                     area_row = {'Sample': sample}
                     for t, a in zip(results['target'], results['area']):
@@ -87,7 +87,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                     waves = data[culture][type][sample]['wavelength']
                     absorption = data[culture][type][sample]['absorption']
 
-                    results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='black', plot=True, square=True)
+                    results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='orange', plot=True, square=True, baseline_square='horizontal_full', savgol_window=21)
 
                     area_row = {'Sample': sample}
                     for t, a in zip(results['target'], results['area']):
@@ -163,23 +163,24 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
     logging.info('Работа главного цикла завершена успешно.')
 
     for t in target:
-        ax.text(t, ax.get_ylim()[0] + 2, str(t), fontsize = 10, rotation = 90, ha = 'center', va = 'bottom')
+        ax.text(t, ax.get_ylim()[0]+0.005, str(t), fontsize = 10, rotation = 90, ha = 'center', va = 'bottom')
 
     custom_lines = [
         Line2D([0], [0], color = 'black', lw = 2),
         Line2D([0], [0], color = 'orange', lw = 2)
     ]
 
-    logging.info('Построение графиков и сохранение таблиц...')
-
-    ax.legend(custom_lines, ['Контроль', 'Эксперимент'], loc = 'lower right', fontsize = 14, frameon = False)
-    ax.set_xlabel('Длина волны, нм', fontsize = 16)
+    ax.legend(custom_lines, ['Контроль', 'Эксперимент'], loc = 'upper right', fontsize = 14, frameon = False)
+    ax.set_xlabel('Обратные длины волн, см(-1)', fontsize = 16)
     ax.set_ylabel('Пропускание, %', fontsize = 16)
     ax.set_title(f'Сравнительная ИК-спектрограмма культуры {culture}', fontsize = 18)
 
+    plt.grid()
     plt.tight_layout()
     plt.savefig(f'/home/kvasonaft/Development/graphs/{culture}.png', dpi = 300, bbox_inches = 'tight')
     plt.close()
+
+    logging.info('График успешно сохранён.')
 
     # break
 
