@@ -6,8 +6,6 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from adjustText import adjust_text
 from scipy.cluster.hierarchy import linkage, dendrogram
-from matplotlib.patches import Patch
-import seaborn as sns
 from tqdm import tqdm
 
 area = pd.read_csv('area_main.csv', index_col = 'Wavelength')
