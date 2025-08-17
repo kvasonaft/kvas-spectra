@@ -3,16 +3,16 @@ import numpy as np
 
 mode = 'cv'
 
-data_peaks = pd.read_csv('peaks_main.csv')
-data_area = pd.read_csv('area_main.csv')
+data_peaks = pd.read_csv('peaks_values.txt')
+data_area = pd.read_csv('area_values.txt')
 
 results_peaks = {}
 results_area = {}
 
-target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1124, 1096, 1050, 1016, 972, 929, 872, 848, 792, 771]
+target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016, 972, 872, 848, 792]
 
-data_peaks = data_peaks.drop(data_peaks.columns[0], axis = 1)
-data_area = data_area.drop(data_area.columns[0], axis = 1)
+# data_peaks = data_peaks.drop(data_peaks.columns[0], axis = 1)
+# data_area = data_area.drop(data_area.columns[0], axis = 1)
 
 if mode == 'stand_dev':
 
