@@ -51,7 +51,7 @@ X_peaks_full = np.linspace(X_peaks.min(), X_peaks.max(), 500).reshape(-1, 1)
 y_peaks_full_pred = model_peaks.predict(X_peaks_full)
 
 ax1.scatter(X_peaks, y, color='orange', label='Экспериментальные данные')
-ax1.plot(X_peaks_full, y_peaks_full_pred, color='green',
+ax1.plot(y_peaks_full_pred, X_peaks_full, color='green',
          label=f'Модель линейной регрессии, R² = {r2_peaks}')
 ax1.set_title('Интегральный показатель по значениям пиков')
 ax1.set_xlabel('Значение интегрального показателя')
@@ -63,7 +63,7 @@ X_area_full = np.linspace(X_area.min(), X_area.max(), 500).reshape(-1, 1)
 y_area_full_pred = model_area.predict(X_area_full)
 
 ax2.scatter(X_area, y, color='orange', label='Экспериментальные данные')
-ax2.plot(X_area_full, y_area_full_pred, color='green',
+ax2.plot(y_area_full_pred, X_area_full, color='green',
          label=f'Модель линейной регрессии, R² = {r2_area}')
 ax2.set_title('Интегральный показатель по площадям пиков')
 ax2.set_xlabel('Значение интегрального показателя')

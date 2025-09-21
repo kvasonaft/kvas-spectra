@@ -10,10 +10,10 @@ from tqdm import tqdm
 import time
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
-
 logging.basicConfig(filename = 'log.txt', filemode = 'w', format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
 
 target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016, 972, 872, 848, 792]
+drop_culture = []
 
 data = None
 
@@ -40,125 +40,135 @@ logging.info('Запуск главного цикла обработки дан
 
 for culture, data_1 in tqdm(data.items(), desc = 'Обработка культур'):
 
-    logging.info(f'Обработка культуры {culture}')
+    if culture in drop_culture:
+        continue
+    else:
 
-    fig, ax = plt.subplots(figsize = (20, 10))
+        logging.info(f'Обработка культуры {culture}')
 
-    for type, data_2 in data_1.items():
+        fig, ax = plt.subplots(figsize = (20, 10))
 
-        try:
+        for type, data_2 in data_1.items():
 
-            if type not in ['Control', 'Experiment']:
-                logging.warning(f'Обнаружен образец без контрольной или экспериментальной метки в культуре {culture}')
-                continue
+            try:
 
-            if type == 'Control':
+                if type not in ['Control', 'Experiment']:
+                    logging.warning(f'Обнаружен образец без контрольной или экспериментальной метки в культуре {culture}')
+                    continue
 
-                con_area_df_rows = []
-                con_peaks_df_rows = []
+                if type == 'Control':
 
-                for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
+                    con_area_df_rows = []
+                    con_peaks_df_rows = []
 
-                    waves = data[culture][type][sample]['wavelength']
-                    absorption = data[culture][type][sample]['absorption']
+                    for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
 
-                    results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='black', plot=True, square=True, baseline_square='horizontal_full', savgol_window=21)
+                        waves = data[culture][type][sample]['wavelength']
+                        absorption = data[culture][type][sample]['absorption']
 
-                    area_row = {'Sample': sample}
-                    for t, a in zip(results['target'], results['area']):
-                        area_row[f'{t}'] = a
-                    con_area_df_rows.append(area_row)
+                        results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='black', plot=True, square=True, baseline_square='horizontal_full', savgol_window=21)
 
-                    peaks_row = {'Sample': sample}
-                    for t, a in zip(results['target'], results['height']):
-                        peaks_row[f'{t}'] = a
-                    con_peaks_df_rows.append(peaks_row)
+                        area_row = {'Sample': sample}
+                        for t, a in zip(results['target'], results['area']):
+                            area_row[f'{t}'] = a
+                        con_area_df_rows.append(area_row)
 
-                con_area_df = pd.DataFrame(con_area_df_rows)
-                con_peaks_df = pd.DataFrame(con_peaks_df_rows)
+                        peaks_row = {'Sample': sample}
+                        for t, a in zip(results['target'], results['height']):
+                            peaks_row[f'{t}'] = a
+                        con_peaks_df_rows.append(peaks_row)
 
-            elif type == 'Experiment':
+                    con_area_df = pd.DataFrame(con_area_df_rows)
+                    con_peaks_df = pd.DataFrame(con_peaks_df_rows)
 
-                exp_area_df_rows = []
-                exp_peaks_df_rows = []
+                elif type == 'Experiment':
 
-                for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
+                    exp_area_df_rows = []
+                    exp_peaks_df_rows = []
 
-                    waves = data[culture][type][sample]['wavelength']
-                    absorption = data[culture][type][sample]['absorption']
+                    for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
 
-                    results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='orange', plot=True, square=True, baseline_square='horizontal_full', savgol_window=21)
+                        waves = data[culture][type][sample]['wavelength']
+                        absorption = data[culture][type][sample]['absorption']
 
-                    area_row = {'Sample': sample}
-                    for t, a in zip(results['target'], results['area']):
-                        area_row[f'{t}'] = a
-                    exp_area_df_rows.append(area_row)
+                        results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=20, color='orange', plot=True, square=True, baseline_square='horizontal_full', savgol_window=21)
 
-                    peaks_row = {'Sample': sample}
-                    for t, a in zip(results['target'], results['height']):
-                        peaks_row[f'{t}'] = a
-                    exp_peaks_df_rows.append(peaks_row)
+                        area_row = {'Sample': sample}
+                        for t, a in zip(results['target'], results['area']):
+                            area_row[f'{t}'] = a
+                        exp_area_df_rows.append(area_row)
 
-                exp_area_df = pd.DataFrame(exp_area_df_rows)
-                exp_peaks_df = pd.DataFrame(exp_peaks_df_rows)
+                        peaks_row = {'Sample': sample}
+                        for t, a in zip(results['target'], results['height']):
+                            peaks_row[f'{t}'] = a
+                        exp_peaks_df_rows.append(peaks_row)
 
-                area_full = pd.concat([con_area_df, exp_area_df], ignore_index=True)
-                peaks_full = pd.concat([con_peaks_df, exp_peaks_df], ignore_index=True)
+                    exp_area_df = pd.DataFrame(exp_area_df_rows)
+                    exp_peaks_df = pd.DataFrame(exp_peaks_df_rows)
 
-                area_full = area_full.set_index('Sample').T
-                peaks_full = peaks_full.set_index('Sample').T
+                    area_full = pd.concat([con_area_df, exp_area_df], ignore_index=True)
+                    peaks_full = pd.concat([con_peaks_df, exp_peaks_df], ignore_index=True)
 
-                dif_area = []
-                dif_peaks = []
+                    area_full = area_full.set_index('Sample').T
+                    peaks_full = peaks_full.set_index('Sample').T
 
-                for row_name, row in area_full.iterrows():
+                    dif_area = []
+                    dif_peaks = []
 
-                    dif_list_a = []
+                    for row_name, row in area_full.iterrows():
 
-                    for col1 in [col for col in area_full.columns if len(col) == 8]:
-                        for col2 in [col for col in area_full.columns if len(col) > 8]:
+                        dif_list_a = []
 
-                            if np.isnan(row[col1]) or np.isnan(row[col2]):
-                                dif_list_a.append(np.nan)
-                            else:
-                                dif_a = round(abs(row[col1] - row[col2]), 2)
-                                dif_list_a.append(dif_a)
+                        for col1 in [col for col in area_full.columns if len(col) == 8]:
+                            for col2 in [col for col in area_full.columns if len(col) > 8]:
 
-                    dif_array_a = np.array(dif_list_a)
-                    mean_dif_a = np.nanmean(dif_array_a)
-                    dif_area.append(round(mean_dif_a, 2))
+                                if np.isnan(row[col1]) or np.isnan(row[col2]):
+                                    dif_list_a.append(np.nan)
+                                else:
+                                    dif_a = abs(row[col1] - row[col2])
+                                    dif_list_a.append(dif_a)
 
-                for row_name, row in peaks_full.iterrows():
+                        dif_array_a = np.array(dif_list_a)
+                        mean_dif_a = np.nanmean(dif_array_a)
+                        dif_area.append(mean_dif_a)
 
-                    dif_list_p = []
+                    for row_name, row in peaks_full.iterrows():
 
-                    for col1 in [col for col in peaks_full.columns if len(col) == 8]:
-                        for col2 in [col for col in peaks_full.columns if len(col) > 8]:
+                        dif_list_p = []
 
-                            if np.isnan(row[col1]) or np.isnan(row[col2]):
-                                dif_list_p.append(np.nan)
-                            else:
-                                dif_p = round(abs(row[col1] - row[col2]), 2)
-                                dif_list_p.append(dif_p)
+                        for col1 in [col for col in peaks_full.columns if len(col) == 8]:
+                            for col2 in [col for col in peaks_full.columns if len(col) > 8]:
 
-                    dif_array_p = np.array(dif_list_p)
-                    mean_dif_p = np.nanmean(dif_array_p)
-                    dif_peaks.append(round(mean_dif_p, 2))
+                                if np.isnan(row[col1]) or np.isnan(row[col2]):
+                                    dif_list_p.append(np.nan)
+                                else:
+                                    dif_p = abs(row[col1] - row[col2])
+                                    dif_list_p.append(dif_p)
 
-                indicator_peaks = int(round(np.nanmean(np.array(dif_peaks)), 0))
-                indicator_area = int(round(np.nanmean(np.array(dif_area)), 0))
+                        dif_array_p = np.array(dif_list_p)
+                        mean_dif_p = np.nanmean(dif_array_p)
+                        dif_peaks.append(mean_dif_p)
 
-                dif_peaks = pd.Series(dif_peaks)
-                dif_area = pd.Series(dif_area)
+                    indicator_peaks = np.nansum(np.array(dif_peaks))
+                    indicator_area = np.nansum(np.array(dif_area))
 
-                peaks_main[f'{culture}({indicator_peaks})'] = dif_peaks
-                area_main[f'{culture}({indicator_peaks})'] = dif_area
+                    dif_peaks = pd.Series(dif_peaks)
+                    dif_area = pd.Series(dif_area)
 
-                peaks_indicator[f'{culture}({indicator_peaks})'] = indicator_peaks
-                area_indicator[f'{culture}({indicator_area})'] = indicator_area
+                    # peaks_main[f'{culture}({indicator_peaks})'] = dif_peaks
+                    # area_main[f'{culture}({indicator_area})'] = dif_area
 
-        except Exception as e:
-            logging.info(f'Возникла ошибка при работе главного цикла обработки данных: {e}')
+                    # peaks_indicator[f'{culture}({indicator_peaks})'] = indicator_peaks
+                    # area_indicator[f'{culture}({indicator_area})'] = indicator_area
+
+                    peaks_main[culture] = dif_peaks
+                    area_main[culture] = dif_area
+
+                    peaks_indicator[culture] = indicator_peaks
+                    area_indicator[culture] = indicator_area
+
+            except Exception as e:
+                logging.info(f'Возникла ошибка при работе главного цикла обработки данных: {e}')
 
     logging.info('Работа главного цикла завершена успешно.')
 

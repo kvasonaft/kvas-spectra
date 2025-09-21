@@ -8,6 +8,7 @@ from matplotlib.patches import Polygon
 from pybaselines import Baseline
 import logging
 import normalization
+import seaborn as sns
 
 def find_nearest(main_idx, side_indices):
 
@@ -57,7 +58,7 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
     y = savgol_filter(y, window_length=savgol_window, polyorder=3)
 
-    y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=positive_peaks, min_max=True)
+    # y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=positive_peaks, min_max=False)
 
     y = -y
 
@@ -84,7 +85,17 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
     y = y - bl_4
 
-    y = y + abs(np.min(y))
+    # y = normalization.normalization(x, y, start=None, stop=None, positive_peaks=positive_peaks, min_max=True, lower_percentile=0, upper_percentile=100)
+
+    # y = y / np.linalg.norm(y)
+
+    idx = np.where(((x >= 650) & (x <= 1800)))[0]
+    if idx.size == 0:
+        raise ValueError("В заданном окне нет точек.")
+    norm = np.linalg.norm(y[idx])
+    y = y / norm
+
+    # y = y + abs(np.min(y))
 
     if plot:
         ax.plot(x, y, color=color, linewidth=1)

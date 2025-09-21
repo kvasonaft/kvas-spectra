@@ -102,9 +102,30 @@ for  idx, table in tqdm(enumerate([area, peaks]), desc = 'Обработка т�
     plt.figure(figsize = (15, 10))
 
     if idx == 1:
-        dendrogram(linked, labels = table.index.to_list(), leaf_rotation = 90, leaf_font_size = 10, color_threshold = 120)
+        dendro = dendrogram(linked, labels = table.index.to_list(), leaf_font_size = 10, color_threshold = 0.04, orientation='left')
+
+        labels = dendro['ivl']
+        indices = dendro['leaves']
+
+        df_dendro = pd.DataFrame({
+            'leaf_index': indices,
+            'label': labels
+        })
+
+        df_dendro.to_csv('dendrogram_peaks.csv')
+
     else:
-        dendrogram(linked, labels = table.index.to_list(), leaf_rotation = 90, leaf_font_size = 10, color_threshold = 2000)
+        dendro_area = dendrogram(linked, labels = table.index.to_list(), leaf_font_size = 10, color_threshold = 1.4, orientation='left')
+
+        labels = dendro_area['ivl']
+        indices = dendro_area['leaves']
+
+        df_dendro_area = pd.DataFrame({
+            'leaf_index': indices,
+            'label': labels
+        })
+
+        df_dendro_area.to_csv('dendrogram_area.csv')
 
     if idx == 1:
         plt.title('Результаты иерархического кластерного анализа (по значениям пиков)', fontsize = 22)
