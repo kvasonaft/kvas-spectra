@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-def folders_rename(old, new, folder_path = '/home/kvasonaft/Development/spectra/dataset', table_path = '/home/kvasonaft/Development/spectra/names.csv', separator = ';'):
+def folders_rename(old, new, folder_path = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/dataset', table_path = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/names.csv', separator = ';'):
 
     '''
     
@@ -37,7 +37,7 @@ def folders_rename(old, new, folder_path = '/home/kvasonaft/Development/spectra/
             print(f'Ошибка при переименовании {old_path} -> {new_path}: {e}')
 
 
-def files_rename(mode = 'all', path = '/home/kvasonaft/Development/spectra/dataset', format = 'txt'):
+def files_rename(mode = 'all', path = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/dataset', format = 'txt'):
 
     '''
     

@@ -6,7 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
 
-conn = sqlite3.connect('spectra.db')
+conn = sqlite3.connect('data/spectra.db')
 
 query = '''
 SELECT samples.name, metadata.exposure_time
@@ -18,8 +18,8 @@ df = pd.read_sql_query(query, conn)
 
 conn.close()
 
-df_area = pd.read_csv('area_indicator.csv')
-df_peaks = pd.read_csv('peaks_indicator.csv')
+df_area = pd.read_csv('data/area_indicator.csv')
+df_peaks = pd.read_csv('data/peaks_indicator.csv')
 
 X_area = df_area[['Indicator']].values
 X_peaks = df_peaks[['Indicator']].values
@@ -71,4 +71,4 @@ ax2.set_ylabel('Время экспонирования, сутки')
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig('/home/kvasonaft/Development/graphs/regression.png', dpi = 600)
+plt.savefig('/Users/kvasonaft/Desktop/Development/kvas-spectra/graphs/diagrams/regression.png', dpi = 600)

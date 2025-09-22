@@ -52,3 +52,8 @@ Thumbs.db
 # Графики
 *.png
 *.jpg
+graphs/
+
+# Папки с данными
+
+data/

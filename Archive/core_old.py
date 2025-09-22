@@ -3,7 +3,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
-import peaks_finder_2
+import Archive.peaks_finder_old as peaks_finder_old
 from matplotlib.lines import Line2D
 import warnings
 from tqdm import tqdm
@@ -62,7 +62,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                     waves = data[culture][type][sample]['wavelength']
                     absorption = data[culture][type][sample]['absorption']
 
-                    results = peaks_finder_2.peaks_finder_2(waves, absorption, target, ax, color = 'orange', square = True)
+                    results = peaks_finder_old.peaks_finder_2(waves, absorption, target, ax, color = 'orange', square = True)
 
                     area_row = {'Sample': sample}
                     for t, a in zip(results['target'], results['area']):
@@ -87,7 +87,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
                     waves = data[culture][type][sample]['wavelength']
                     absorption = data[culture][type][sample]['absorption']
 
-                    results = peaks_finder_2.peaks_finder_2(waves, absorption, target, ax, color = 'black', square=True)
+                    results = peaks_finder_old.peaks_finder_2(waves, absorption, target, ax, color = 'black', square=True)
 
                     area_row = {'Sample': sample}
                     for t, a in zip(results['target'], results['area']):

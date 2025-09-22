@@ -23,7 +23,7 @@ for idx in range(len(ranges_char)):
 
     data = None
 
-    with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
+    with open('data/spectra_dict.json', 'r', encoding = 'utf-8') as f:
         try:
             data = json.load(f)
         except Exception as e:
@@ -132,5 +132,5 @@ for idx in range(len(ranges_char)):
 
 fig.suptitle('Кластер F', fontsize=24)
 plt.tight_layout()
-plt.savefig(f'/home/kvasonaft/Development/graphs/clipped/F.png', dpi = 300, bbox_inches = 'tight')
+plt.savefig(f'/Users/kvasonaft/Desktop/Development/kvas-spectra/graphs/clipped/F.png', dpi = 300, bbox_inches = 'tight')
 plt.show()

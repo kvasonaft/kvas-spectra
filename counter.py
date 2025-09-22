@@ -20,16 +20,16 @@ cluster = ['F-Arctic-PET-462-28-B', 'F-Bl-PET-454-211-A', 'F-Bl-PET-461-28-A', '
 
 sns.set_theme(style="darkgrid", palette="colorblind")
 
-area_indicators = pd.read_csv('area_indicator.csv', names=['culture', 'Indicator'], header=None)
+area_indicators = pd.read_csv('data/area_indicator.csv', names=['culture', 'Indicator'], header=None)
 area_indicators = area_indicators[1:]
 area_ind = np.array(list(area_indicators['Indicator']))
 
-peaks_indicators = pd.read_csv('peaks_indicator.csv', names=['culture', 'Indicator'], header=None)
+peaks_indicators = pd.read_csv('data/peaks_indicator.csv', names=['culture', 'Indicator'], header=None)
 peaks_indicators = peaks_indicators[1:]
 peaks_ind = np.array(list(peaks_indicators['Indicator']))
 
-area_values = pd.read_csv('area_main.csv')
-peaks_values = pd.read_csv('peaks_main.csv')
+area_values = pd.read_csv('data/area_main.csv')
+peaks_values = pd.read_csv('data/peaks_main.csv')
 
 result_dict_area = {'Wavenumber':list(area_values['Wavelength'])}
 result_dict_peaks = {'Wavenumber':list(area_values['Wavelength'])}
@@ -89,5 +89,5 @@ for idx, (culture, col_data) in enumerate(result_dict_peaks.items()):
 plt.suptitle('Кластер E', fontsize=18, y=0.99)
 plt.tight_layout()
 plt.subplots_adjust(wspace=0.15, hspace=0.3)
-plt.savefig(f'/home/kvasonaft/Development/graphs/percent/peaks/E_peaks.png', dpi=300, bbox_inches='tight')
+plt.savefig(f'/Users/kvasonaft/Desktop/Development/kvas-spectra/graphs/counted/peaks/E_peaks.png', dpi=300, bbox_inches='tight')
 plt.show()

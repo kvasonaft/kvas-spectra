@@ -11,7 +11,7 @@ target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370
 
 data = None
 
-with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
+with open('data/spectra_dict.json', 'r', encoding = 'utf-8') as f:
     data = json.load(f)
 
 peaks = {}
@@ -133,5 +133,5 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
 area = pd.DataFrame(area)
 peaks = pd.DataFrame(peaks)
 
-area.to_csv('area_values.txt', index=False)
-peaks.to_csv('peaks_values.txt', index=False)
+area.to_csv('data/area_values.txt', index=False)
+peaks.to_csv('data/peaks_values.txt', index=False)

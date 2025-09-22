@@ -2,7 +2,7 @@ import sqlite3
 import json
 from collections import defaultdict
 
-def query(path = '/home/kvasonaft/Development/kvas-spectra/spectra.db'):
+def query(path = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/spectra.db'):
 
     '''
     
@@ -42,5 +42,5 @@ def query(path = '/home/kvasonaft/Development/kvas-spectra/spectra.db'):
 
     conn.close()
 
-    with open("spectra_dict.json", "w", encoding="utf-8") as f:
+    with open("data/spectra_dict.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)

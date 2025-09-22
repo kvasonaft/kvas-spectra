@@ -10,7 +10,7 @@ from tqdm import tqdm
 import time
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
-logging.basicConfig(filename = 'log.txt', filemode = 'w', format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
+logging.basicConfig(filename = 'data/log.txt', filemode = 'w', format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
 
 target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016, 972, 872, 848, 792]
 drop_culture = []
@@ -20,7 +20,7 @@ data = None
 start_time = time.time()
 logging.info('Программа запущена.')
 
-with open('spectra_dict.json', 'r', encoding = 'utf-8') as f:
+with open('data/spectra_dict.json', 'r', encoding = 'utf-8') as f:
     try:
         data = json.load(f)
         logging.info(f'Файл JSON был успешно загружен.')
@@ -187,7 +187,7 @@ for culture, data_1 in tqdm(data.items(), desc = 'Обработка культ�
 
     plt.grid()
     plt.tight_layout()
-    plt.savefig(f'/home/kvasonaft/Development/graphs/{culture}.png', dpi = 300, bbox_inches = 'tight')
+    plt.savefig(f'/Users/kvasonaft/Desktop/Development/kvas-spectra/graphs/spectra/{culture}.png', dpi = 300, bbox_inches = 'tight')
     plt.close()
 
     logging.info('График успешно сохранён.')
@@ -202,10 +202,10 @@ try:
     peaks_indicator = pd.DataFrame.from_dict(peaks_indicator, orient='index', columns=['Indicator'])
     area_indicator = pd.DataFrame.from_dict(area_indicator, orient='index', columns=['Indicator'])
 
-    peaks_main.to_csv('peaks_main.csv', index=False)
-    area_main.to_csv('area_main.csv', index=False)
-    peaks_indicator.to_csv('peaks_indicator.csv')
-    area_indicator.to_csv('area_indicator.csv')
+    peaks_main.to_csv('data/peaks_main.csv', index=False)
+    area_main.to_csv('data/area_main.csv', index=False)
+    peaks_indicator.to_csv('data/peaks_indicator.csv')
+    area_indicator.to_csv('data/area_indicator.csv')
 
     logging.info('Все данные успешно сохранены.')
 

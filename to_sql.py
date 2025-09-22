@@ -3,7 +3,7 @@ import os
 import sqlite3
 from tqdm import tqdm
 
-def sqlite_db(folder = '/home/kvasonaft/Development/spectra/metadata.xlsx', table = '/home/kvasonaft/Development/spectra/dataset'):
+def sqlite_db(table = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/metadata.xlsx', folder = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/dataset'):
 
     '''
     
@@ -15,10 +15,10 @@ def sqlite_db(folder = '/home/kvasonaft/Development/spectra/metadata.xlsx', tabl
 
     '''
 
-    names = pd.read_excel(folder)
-    path = table
+    names = pd.read_excel(table)
+    path = folder
 
-    conn = sqlite3.connect('spectra.db')
+    conn = sqlite3.connect('data/spectra.db')
     cur = conn.cursor()
 
     cur.execute('''

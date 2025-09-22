@@ -3,8 +3,8 @@ import numpy as np
 
 mode = 'cv'
 
-data_peaks = pd.read_csv('peaks_values.txt')
-data_area = pd.read_csv('area_values.txt')
+data_peaks = pd.read_csv('data/peaks_values.txt')
+data_area = pd.read_csv('data/area_values.txt')
 
 results_peaks = {}
 results_area = {}
@@ -57,4 +57,4 @@ res_area = pd.DataFrame(results_area, index = ['Area']).T
 
 res_united = pd.concat([res_peaks, res_area], axis=1)
 
-res_united.to_csv(f'united_{mode}.txt', index = True)
+res_united.to_csv(f'data/united_{mode}.txt', index = True)

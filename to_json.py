@@ -3,7 +3,7 @@ import os
 import json
 from tqdm import tqdm
 
-def json_db(folder = '/home/kvasonaft/Development/spectra/metadata.xlsx', table = '/home/kvasonaft/Development/spectra/dataset'):
+def json_db(table = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/metadata.xlsx', folder = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/dataset'):
 
     '''
     
@@ -17,8 +17,8 @@ def json_db(folder = '/home/kvasonaft/Development/spectra/metadata.xlsx', table 
 
     '''
 
-    names = pd.read_excel(folder)
-    path = table
+    names = pd.read_excel(table)
+    path = folder
 
     data = {}
 
@@ -60,5 +60,5 @@ def json_db(folder = '/home/kvasonaft/Development/spectra/metadata.xlsx', table 
         except Exception as e:
             print(f'Возникла проблема с чтением папки {row['New name']}')
 
-    with open('dataset.json', 'w', encoding = 'utf-8') as f:
+    with open('data/dataset.json', 'w', encoding = 'utf-8') as f:
         json.dump(data, f, ensure_ascii = False, indent = 4)
