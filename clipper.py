@@ -8,129 +8,140 @@ from matplotlib.lines import Line2D
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-target = [3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453, 1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016, 972, 872, 848, 792]
+def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
+            target=[3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453,
+                     1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016,972, 872, 848, 792],
+                         ranges=[(3020, 3080), (2780, 3100), (1480, 1800), (1310, 1520), (900, 1330), (600, 915)], 
+                         savgol_window=21):
 
-ranges = [(3020, 3080), (2780, 3100), (1480, 1800), (1310, 1520), (900, 1330), (600, 915)]
-ranges_char = ['3020-3080', '2780-3100', '1480-1800', '1310-1520', '900-1330', '600-915']
+    # ranges = [(3020, 3080), (2780, 3100), (1480, 1800), (1310, 1520), (900, 1330), (600, 915)]
 
-fig, axes = plt.subplots(2, 3, figsize=(20, 10))
-axes = axes.flatten()
+    ranges_char = []
 
-for idx in range(len(ranges_char)):
+    for pair in ranges:
+        first = str(pair[1])
+        second = str(pair[0])
+        element = first + '-' + second
+        ranges_char.append(element)
 
-    start = ranges[idx][0]
-    stop = ranges[idx][1]
+    fig, axes = plt.subplots(2, 3, figsize=(20, 10))
+    axes = axes.flatten()
 
-    data = None
+    for idx in range(len(ranges_char)):
 
-    with open('data/spectra_dict.json', 'r', encoding = 'utf-8') as f:
-        try:
-            data = json.load(f)
-        except Exception as e:
-            print(e)
+        start = ranges[idx][0]
+        stop = ranges[idx][1]
 
-    cultures = ['P-Mw-PET-2_8rec-bt-433-M', 'P-Mw-PET-1-sf-ab-389-D', 'P-Mw-PET-1-bt-ab-387-D']
+        data = None
 
-    if data is None:
-        raise ValueError(f'Ошибка при загрузке файла JSON.')
+        with open('data/spectra_dict.json', 'r', encoding = 'utf-8') as f:
+            try:
+                data = json.load(f)
+            except Exception as e:
+                print(e)
 
-    # fig, axes = plt.subplots((2, 3), figsize=(20, 10))
+        cultures = cultures
 
-    for culture, data_1 in data.items():
+        if data is None:
+            raise ValueError(f'Ошибка при загрузке файла JSON.')
 
-        if culture not in cultures:
-            continue
-        else:
+        # fig, axes = plt.subplots((2, 3), figsize=(20, 10))
 
-            for type, data_2 in data_1.items():
+        for culture, data_1 in data.items():
 
-                if type not in ['Control', 'Experiment']:
-                    continue
+            if culture not in cultures:
+                continue
+            else:
 
-                if type == 'Control':
-                    
-                    all_wavenumbers_con = []
-                    all_absorptions_con = []
+                for type, data_2 in data_1.items():
 
-                    for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
+                    if type not in ['Control', 'Experiment']:
+                        continue
 
-                        x = data_3['wavelength']
-                        y = data_3['absorption']
+                    if type == 'Control':
+                        
+                        all_wavenumbers_con = []
+                        all_absorptions_con = []
 
-                        x = np.asarray(x, dtype=float)
-                        y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
+                        for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
 
-                        y = savgol_filter(y, window_length=21, polyorder=3)
-                        y = -y
+                            x = data_3['wavelength']
+                            y = data_3['absorption']
 
-                        baseline_fitter = Baseline(x_data=x)
-                        bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
-                        y = y - bl_4
+                            x = np.asarray(x, dtype=float)
+                            y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
 
-                        indx = np.where(((x >= 650) & (x <= 1800)))[0]
-                        if indx.size == 0:
-                            raise ValueError("В заданном окне нет точек.")
-                        norm = np.linalg.norm(y[indx])
-                        y = y / norm
+                            y = savgol_filter(y, window_length=savgol_window, polyorder=3)
+                            y = -y
 
-                        # y = y + abs(np.min(y))
+                            baseline_fitter = Baseline(x_data=x)
+                            bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
+                            y = y - bl_4
 
-                        important = np.array([start, stop])
-                        indices = np.nonzero(np.isin(x, important))[0]
-                        values = y[np.min(indices):np.max(indices)+1]
+                            indx = np.where(((x >= 650) & (x <= 1800)))[0]
+                            if indx.size == 0:
+                                raise ValueError("В заданном окне нет точек.")
+                            norm = np.linalg.norm(y[indx])
+                            y = y / norm
 
-                        all_wavenumbers_con.extend(important)
-                        all_absorptions_con.extend(values)
+                            # y = y + abs(np.min(y))
 
-                        axes[idx].plot(x[np.min(indices):np.max(indices)+1], values, color='black')
+                            important = np.array([start, stop])
+                            indices = np.nonzero(np.isin(x, important))[0]
+                            values = y[np.min(indices):np.max(indices)+1]
 
-                elif type == 'Experiment':
+                            all_wavenumbers_con.extend(important)
+                            all_absorptions_con.extend(values)
 
-                    all_wavenumbers_exp = []
-                    all_absorptions_exp = []
+                            axes[idx].plot(x[np.min(indices):np.max(indices)+1], values, color='black')
 
-                    for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
+                    elif type == 'Experiment':
 
-                        x = data_3['wavelength']
-                        y = data_3['absorption']
+                        all_wavenumbers_exp = []
+                        all_absorptions_exp = []
 
-                        x = np.asarray(x, dtype=float)
-                        y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
+                        for i, (sample, data_3) in enumerate(data_2.items(), start = 1):
 
-                        y = savgol_filter(y, window_length=21, polyorder=3)
-                        y = -y
+                            x = data_3['wavelength']
+                            y = data_3['absorption']
 
-                        baseline_fitter = Baseline(x_data=x)
-                        bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
-                        y = y - bl_4
+                            x = np.asarray(x, dtype=float)
+                            y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
 
-                        indx = np.where(((x >= 650) & (x <= 1800)))[0]
-                        if indx.size == 0:
-                            raise ValueError("В заданном окне нет точек.")
-                        norm = np.linalg.norm(y[indx])
-                        y = y / norm
+                            y = savgol_filter(y, window_length=savgol_window, polyorder=3)
+                            y = -y
 
-                        # y = y + abs(np.min(y))
+                            baseline_fitter = Baseline(x_data=x)
+                            bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
+                            y = y - bl_4
 
-                        important = np.array([start, stop])
-                        indices = np.nonzero(np.isin(x, important))[0]
-                        values = y[np.min(indices):np.max(indices)+1]
+                            indx = np.where(((x >= 650) & (x <= 1800)))[0]
+                            if indx.size == 0:
+                                raise ValueError("В заданном окне нет точек.")
+                            norm = np.linalg.norm(y[indx])
+                            y = y / norm
 
-                        all_wavenumbers_exp.extend(important)
-                        all_absorptions_exp.extend(values)
+                            important = np.array([start, stop])
+                            indices = np.nonzero(np.isin(x, important))[0]
+                            values = y[np.min(indices):np.max(indices)+1]
 
-                        axes[idx].plot(x[np.min(indices):np.max(indices)+1], values, color='red')
+                            all_wavenumbers_exp.extend(important)
+                            all_absorptions_exp.extend(values)
 
-    custom_lines = [Line2D([0], [0], color='red', lw=2), Line2D([0], [0], color='black', lw=2)]
-    axes[idx].legend(custom_lines, ['Эксперимент', 'Контроль'])
-    axes[idx].set_xlabel('Обратные длины волн, см(-1)', fontsize = 10)
-    axes[idx].set_ylabel('Пропускание, %', fontsize = 10)
-    axes[idx].set_title(f'{ranges_char[idx]} см(-1)', fontsize = 12)
+                            axes[idx].plot(x[np.min(indices):np.max(indices)+1], values, color=exp_color)
 
-    plt.grid()
+        custom_lines = [Line2D([0], [0], color=con_color, lw=2), Line2D([0], [0], color=exp_color, lw=2)]
+        axes[idx].legend(custom_lines, ['Эксперимент', 'Контроль'])
+        axes[idx].set_xlabel('Обратные длины волн, см(-1)', fontsize = 10)
+        axes[idx].set_ylabel('Пропускание, %', fontsize = 10)
+        axes[idx].set_title(f'{ranges_char[idx]} см(-1)', fontsize = 12)
+
+        plt.grid()
+        plt.tight_layout()
+
+    fig.suptitle(f'Кластер {cluster_name}', fontsize=24)
     plt.tight_layout()
+    plt.savefig(f'graphs/clipped/{cluster_name}.png', dpi = 300, bbox_inches = 'tight')
 
-fig.suptitle('Кластер F', fontsize=24)
-plt.tight_layout()
-plt.savefig(f'/Users/kvasonaft/Desktop/Development/kvas-spectra/graphs/clipped/F.png', dpi = 300, bbox_inches = 'tight')
-plt.show()
+if __name__ == '__main__':
+    clipper('test_cluster', ['P-Mw-PET-2_8rec-bt-433-M', 'P-Mw-PET-1-sf-ab-389-D', 'P-Mw-PET-1-bt-ab-387-D'])
