@@ -107,14 +107,13 @@ def post_core(circle=False, pca_choise=False, cluster=True):
 
             plt.close()
 
-        # hca
+        # HCA
 
         if cluster:
 
             linked = linkage(table, method='ward', metric='euclidean')
             plt.figure(figsize=(15, 10))
 
-            # задаём разные пороги для разных таблиц
             if idx == 1:
                 color_threshold = 0.04
             else:
@@ -128,18 +127,14 @@ def post_core(circle=False, pca_choise=False, cluster=True):
                 orientation='left'
             )
 
-            # создаём DataFrame с кластерами
-
             cluster_labels = fcluster(linked, t=color_threshold, criterion='distance')
             df_clusters = pd.DataFrame({
                 'Sample': table.index,
                 'Cluster': cluster_labels
             }).set_index('Sample')
 
-            # сортировка по номеру кластера
             df_clusters = df_clusters.sort_values(by='Cluster')
 
-            # сохраняем результаты
             if idx == 1:
                 df_clusters.to_csv('data/cluster_labels_peaks.csv')
                 plt.title('Результаты иерархического кластерного анализа (по значениям пиков)', fontsize=22)
