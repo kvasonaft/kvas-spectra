@@ -44,3 +44,7 @@ def query(path = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/spectra
 
     with open("data/spectra_dict.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+if __name__ == '__main__':
+    query()
