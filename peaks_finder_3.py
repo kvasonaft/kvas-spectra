@@ -47,10 +47,10 @@ def append_result(results, target, peak_x=np.nan, peak_y=np.nan, area=np.nan):
     results['height'].append(round(peak_y, 2) if not np.isnan(peak_y) else np.nan)
     results['area'].append(round(area, 2) if not np.isnan(area) else None)
 
-def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots=True, color='green', 
+def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots=False, color='green', 
                    square=False, hatch=False, log=False, baseline_square='horizontal_full', 
                    prominence=None, baseline_primary='snip', plot=False, savgol_window=21, 
-                   zero=False, positive_peaks=True):
+                   zero=False, positive_peaks=True, show_plot=False):
 
     area = None
     baseline = None
@@ -90,8 +90,11 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
     y = y / np.linalg.norm(y)
 
+    y_for_graph = np.copy(y)
+    y_for_graph[y_for_graph < 0] = 0
+
     if plot:
-        ax.plot(x, y, color=color, linewidth=1)
+        ax.plot(x, y_for_graph, color=color, linewidth=1)
         if zero:
             ax.plot(np.linspace(450, 4000, len(x)), np.zeros(len(x)))
 
@@ -182,6 +185,9 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
                 polygon = Polygon(np.column_stack((x_int, y_int)), closed=True, facecolor='none', edgecolor=color, hatch='++', alpha=0.3)
                 ax.add_patch(polygon)
             if square:
-                ax.fill_between(x_int, y_int, baseline, alpha=0.2, color=color)
+                ax.fill_between(x_int, corrected_signal, baseline, alpha=0.2, color=color)
+
+    if show_plot:
+        plt.show()
 
     return results
