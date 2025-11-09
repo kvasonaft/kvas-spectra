@@ -7,8 +7,6 @@ from scipy.signal import savgol_filter
 from matplotlib.patches import Polygon
 from pybaselines import Baseline
 import logging
-import normalization
-import seaborn as sns
 
 def find_nearest(main_idx, side_indices):
 
@@ -39,7 +37,7 @@ def find_nearest(main_idx, side_indices):
     right_candidates = side_indices[side_indices > main_idx]
 
     left_idx = int(left_candidates.max()) if left_candidates.size > 0 else None
-    right_idx = int(right_candidates.min()) if right_candidates.size >0 else None
+    right_idx = int(right_candidates.min()) if right_candidates.size > 0 else None
 
     return left_idx, right_idx
 
@@ -49,16 +47,18 @@ def append_result(results, target, peak_x=np.nan, peak_y=np.nan, area=np.nan):
     results['height'].append(round(peak_y, 2) if not np.isnan(peak_y) else np.nan)
     results['area'].append(round(area, 2) if not np.isnan(area) else None)
 
-def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots = False, color='green', square=False, hatch=False, log=False, baseline_square='linear', prominence=0.01, baseline_primary='snip', plot=False, savgol_window=11, zero=False, positive_peaks=True):
+def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots=True, color='green', 
+                   square=False, hatch=False, log=False, baseline_square='horizontal_full', 
+                   prominence=None, baseline_primary='snip', plot=False, savgol_window=21, 
+                   zero=False, positive_peaks=True):
 
     area = None
+    baseline = None
 
     x = np.asarray(x, dtype=float)
     y = np.asarray([str(v).replace(',', '.') for v in y], dtype=float)
 
     y = savgol_filter(y, window_length=savgol_window, polyorder=3)
-
-    # y = normalization.normalization(x, y, start=3900, stop=3990, positive_peaks=positive_peaks, min_max=False)
 
     y = -y
 
@@ -66,44 +66,36 @@ def peaks_finder_3(x, y, targets, ax=None, delta=20, side_delta=300, yellow_dots
 
     baseline_fitter = Baseline(x_data=x)
         
+    # if plot:
+    #     if ax is None:
+    #         ax = plt.gca()
+
     if plot:
-        if ax is None:
-            ax = plt.gca()
+        ax = plt.gca()
 
     if baseline_primary == 'modpoly':
-        bl_1, _ = baseline_fitter.modpoly(y, poly_order=3)
+        bl, _ = baseline_fitter.modpoly(y, poly_order=3)
         # ax.plot(x, bl_1, color='blue', linewidth=1, label='modpoly')
     elif baseline_primary == 'asls':
-        bl_2, _ = baseline_fitter.asls(y, lam=1e7, p=0.02)
+        bl, _ = baseline_fitter.asls(y, lam=1e7, p=0.02)
         # ax.plot(x, bl_2, color='blue', linewidth=1, label='asls')
     elif baseline_primary == 'mor':
-        bl_3, _ = baseline_fitter.mor(y, half_window=30)
+        bl, _ = baseline_fitter.mor(y, half_window=30)
         # ax.plot(x, bl_3, color='blue', linewidth=1, label='mor')
     elif baseline_primary == 'snip':
-        bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
+        bl, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
         # ax.plot(x, bl_4, color='blue', linewidth=1, label='snip')
 
-    y = y - bl_4
+    y = y - bl
 
-    # y = normalization.normalization(x, y, start=None, stop=None, positive_peaks=positive_peaks, min_max=True, lower_percentile=0, upper_percentile=100)
-
-    # y = y / np.linalg.norm(y)
-
-    idx = np.where(((x >= 650) & (x <= 1800)))[0]
-    if idx.size == 0:
-        raise ValueError("В заданном окне нет точек.")
-    norm = np.linalg.norm(y[idx])
-    y = y / norm
-
-    # y = y + abs(np.min(y))
+    y = y / np.linalg.norm(y)
 
     if plot:
         ax.plot(x, y, color=color, linewidth=1)
         if zero:
             ax.plot(np.linspace(450, 4000, len(x)), np.zeros(len(x)))
 
-    # prominence = prominence * (np.max(y) - np.min(y))
-    prominence = None
+    prominence = prominence
 
     for target in targets:
         mask = (x >= target - delta) & (x <= target + delta)
