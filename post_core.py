@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from adjustText import adjust_text
 from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
+from matplotlib.patches import Patch
 
 def post_core(circle=False, pca_choise=False, cluster=True):
 
@@ -109,25 +110,111 @@ def post_core(circle=False, pca_choise=False, cluster=True):
 
         # HCA
 
+        # if cluster:
+
+        #     linked = linkage(table, method='ward', metric='euclidean')
+        #     plt.figure(figsize=(15, 10))
+
+        #     if idx == 1:
+        #         color_threshold = 0.04
+        #     else:
+        #         color_threshold = 1.1
+
+        #     dendro = dendrogram(
+        #         linked,
+        #         labels=table.index.to_list(),
+        #         leaf_font_size=10,
+        #         color_threshold=color_threshold,
+        #         orientation='left'
+        #     )
+
+        #     cluster_labels = fcluster(linked, t=color_threshold, criterion='distance')
+        #     n_clusters = len(set(cluster_labels))
+        #     default_colors = plt.cm.tab10.colors
+
+        #     legend_elements = [
+        #         Patch(facecolor=default_colors[i % 10], label=f'Кластер {i+1}')
+        #         for i in range(n_clusters)
+        #         ]
+
+        #     plt.legend(handles=legend_elements, fontsize=12, 
+        #             title='Кластеры', title_fontsize=14, ncols=2, loc='upper left')
+
+        #     df_clusters = pd.DataFrame({
+        #         'Sample': table.index,
+        #         'Cluster': cluster_labels
+        #     }).set_index('Sample')
+
+        #     df_clusters = df_clusters.sort_values(by='Cluster')
+
+        #     if idx == 1:
+        #         df_clusters.to_csv('data/cluster_labels_peaks.csv')
+        #         plt.title('Результаты иерархического кластерного анализа (по значениям пиков)', fontsize=22)
+        #         plt.savefig('graphs/diagrams/dendrogram_by_peaks.png', dpi=600, bbox_inches='tight')
+        #     else:
+        #         df_clusters.to_csv('data/cluster_labels_area.csv')
+        #         plt.title('Результаты иерархического кластерного анализа (по площадям пиков)', fontsize=22)
+        #         plt.savefig('graphs/diagrams/dendrogram_by_area.png', dpi=600, bbox_inches='tight')
+
+        #     plt.xlabel('Расстояние', fontsize=18)
+        #     plt.ylabel('Объекты', fontsize=18)
+        #     plt.tight_layout()
+        #     plt.close()
+
         if cluster:
 
             linked = linkage(table, method='ward', metric='euclidean')
-            plt.figure(figsize=(15, 10))
+            fig, ax = plt.subplots(figsize=(15, 10))
 
             if idx == 1:
                 color_threshold = 0.04
             else:
-                color_threshold = 0.7
+                color_threshold = 1.1
 
             dendro = dendrogram(
                 linked,
                 labels=table.index.to_list(),
                 leaf_font_size=10,
                 color_threshold=color_threshold,
-                orientation='left'
+                orientation='left',
+                ax=ax
             )
 
             cluster_labels = fcluster(linked, t=color_threshold, criterion='distance')
+            
+            # Создаем маппинг: номер образца -> цвет из дендрограммы
+            leaves = dendro['leaves']  # порядок образцов на дендрограмме (снизу вверх)
+            leaf_colors = dendro['leaves_color_list']  # цвета листьев
+            
+            # Создаем маппинг: индекс образца -> цвет
+            sample_to_color = {}
+            for leaf_idx, color in zip(leaves, leaf_colors):
+                sample_to_color[leaf_idx] = color
+            
+            # Определяем порядок кластеров по их появлению на дендрограмме (снизу вверх)
+            cluster_order = []
+            cluster_to_color = {}
+            
+            for leaf_idx in leaves:  # проходим по образцам в порядке их появления на дендрограмме
+                cluster_num = cluster_labels[leaf_idx]
+                if cluster_num not in cluster_order:
+                    cluster_order.append(cluster_num)
+                    cluster_to_color[cluster_num] = sample_to_color[leaf_idx]
+            
+            # Создаем легенду в порядке появления кластеров на дендрограмме
+            legend_elements = [
+                Patch(facecolor=cluster_to_color[cluster_num], label=f'Кластер {cluster_num}')
+                for cluster_num in cluster_order
+            ]
+
+            ncol = 2 if len(cluster_order) > 10 else 1
+            ax.legend(handles=legend_elements, 
+                    fontsize=12, 
+                    title='Кластеры', 
+                    title_fontsize=14, 
+                    ncol=ncol, 
+                    loc='upper left')
+
             df_clusters = pd.DataFrame({
                 'Sample': table.index,
                 'Cluster': cluster_labels
@@ -137,15 +224,15 @@ def post_core(circle=False, pca_choise=False, cluster=True):
 
             if idx == 1:
                 df_clusters.to_csv('data/cluster_labels_peaks.csv')
-                plt.title('Результаты иерархического кластерного анализа (по значениям пиков)', fontsize=22)
+                ax.set_title('Результаты иерархического кластерного анализа (по значениям пиков)', fontsize=22)
                 plt.savefig('graphs/diagrams/dendrogram_by_peaks.png', dpi=600, bbox_inches='tight')
             else:
                 df_clusters.to_csv('data/cluster_labels_area.csv')
-                plt.title('Результаты иерархического кластерного анализа (по площадям пиков)', fontsize=22)
+                ax.set_title('Результаты иерархического кластерного анализа (по площадям пиков)', fontsize=22)
                 plt.savefig('graphs/diagrams/dendrogram_by_area.png', dpi=600, bbox_inches='tight')
 
-            plt.xlabel('Расстояние', fontsize=18)
-            plt.ylabel('Объекты', fontsize=18)
+            ax.set_xlabel('Расстояние', fontsize=18)
+            ax.set_ylabel('Объекты', fontsize=18)
             plt.tight_layout()
             plt.close()
 
