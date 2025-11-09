@@ -71,16 +71,32 @@ def sqlite_db(table = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/me
             cur.execute('SELECT id FROM samples WHERE name = ?', (sample_name,))
             sample_id = cur.fetchone()[0]
 
-            cur.execute('''
-            INSERT INTO metadata (sample_id, taxonomy, exposure_time, organism, plastic_type, origin) VALUES (?, ?, ?, ?, ?, ?)''', (
-                sample_id,
-                row['Taxonomy'],
-                row['Exposure time'],
-                row['Bacteria / Fungi / Plank'],
-                row['Plastic type'],
-                row['Origin']
-            ))
-            conn.commit()
+            # cur.execute('''
+            # INSERT INTO metadata (sample_id, taxonomy, exposure_time, organism, plastic_type, origin) VALUES (?, ?, ?, ?, ?, ?)''', (
+            #     sample_id,
+            #     row['Taxonomy'],
+            #     row['Exposure time'],
+            #     row['Bacteria / Fungi / Plank'],
+            #     row['Plastic type'],
+            #     row['Origin']
+            # ))
+            # conn.commit()
+
+            # Проверяем, есть ли уже метаданные для этого образца
+            
+            cur.execute('SELECT COUNT(*) FROM metadata WHERE sample_id = ?', (sample_id,))
+            if cur.fetchone()[0] == 0:
+                cur.execute('''
+                INSERT INTO metadata (sample_id, taxonomy, exposure_time, organism, plastic_type, origin) 
+                VALUES (?, ?, ?, ?, ?, ?)''', (
+                    sample_id,
+                    row['Taxonomy'],
+                    row['Exposure time'],
+                    row['Bacteria / Fungi / Plank'],
+                    row['Plastic type'],
+                    row['Origin']
+                ))
+                conn.commit()
 
             for file_name in tqdm(sorted(os.listdir(folder_path)), desc = 'Запись файлов'):
                 if file_name.endswith('.txt'):
@@ -100,12 +116,17 @@ def sqlite_db(table = '/Users/kvasonaft/Desktop/Development/kvas-spectra/data/me
                             cur.execute('''
                             INSERT INTO spectrum_values (spectrum_id, point_index, wavelength, absorption) VALUES (?, ?, ?, ?)
                             ''', (spectrum_id, idx, x, y))
-                        conn.commit()
 
                     except Exception as e:
                         print(f'Ошибка при чтении {file_path}: {e}')
+
+            conn.commit()
         
         except Exception as e:
             print(f"Ошибка при обработке образца {row['New name']}: {e}")
 
     conn.close()
+
+
+if __name__ == '__main__':
+    sqlite_db()
