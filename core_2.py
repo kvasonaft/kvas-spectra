@@ -207,7 +207,7 @@ def core(target = target, drop_culture=drop_culture, indicators_on_pictures=Fals
 
         logging.info('График успешно сохранён.')
 
-        break
+        # break
 
     try:
 
