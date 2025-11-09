@@ -12,7 +12,7 @@ def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
             target=[3054, 2969, 2908, 1730, 1644, 1577, 1538, 1504, 1470, 1453,
                      1410, 1370, 1342, 1240, 1176, 1096, 1050, 1016,972, 872, 848, 792],
                          ranges=[(3020, 3080), (2780, 3100), (1480, 1800), (1310, 1520), (900, 1330), (600, 915)], 
-                         savgol_window=21):
+                         savgol_window=21, added_path=''):
 
     # ranges = [(3020, 3080), (2780, 3100), (1480, 1800), (1310, 1520), (900, 1330), (600, 915)]
 
@@ -45,8 +45,6 @@ def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
         if data is None:
             raise ValueError(f'Ошибка при загрузке файла JSON.')
 
-        # fig, axes = plt.subplots((2, 3), figsize=(20, 10))
-
         for culture, data_1 in data.items():
 
             if culture not in cultures:
@@ -78,13 +76,7 @@ def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
                             bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
                             y = y - bl_4
 
-                            indx = np.where(((x >= 650) & (x <= 1800)))[0]
-                            if indx.size == 0:
-                                raise ValueError("В заданном окне нет точек.")
-                            norm = np.linalg.norm(y[indx])
-                            y = y / norm
-
-                            # y = y + abs(np.min(y))
+                            y = y / np.linalg.norm(y)
 
                             important = np.array([start, stop])
                             indices = np.nonzero(np.isin(x, important))[0]
@@ -115,11 +107,7 @@ def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
                             bl_4, _ = baseline_fitter.snip(y, max_half_window=40, decreasing=True, smooth_half_window=3)
                             y = y - bl_4
 
-                            indx = np.where(((x >= 650) & (x <= 1800)))[0]
-                            if indx.size == 0:
-                                raise ValueError("В заданном окне нет точек.")
-                            norm = np.linalg.norm(y[indx])
-                            y = y / norm
+                            y = y / np.linalg.norm(y)
 
                             important = np.array([start, stop])
                             indices = np.nonzero(np.isin(x, important))[0]
@@ -130,7 +118,7 @@ def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
 
                             axes[idx].plot(x[np.min(indices):np.max(indices)+1], values, color=exp_color)
 
-        custom_lines = [Line2D([0], [0], color=con_color, lw=2), Line2D([0], [0], color=exp_color, lw=2)]
+        custom_lines = [Line2D([0], [0], color=exp_color, lw=2), Line2D([0], [0], color=con_color, lw=2)]
         axes[idx].legend(custom_lines, ['Эксперимент', 'Контроль'])
         axes[idx].set_xlabel('Обратные длины волн, см(-1)', fontsize = 10)
         axes[idx].set_ylabel('Пропускание, %', fontsize = 10)
@@ -141,7 +129,7 @@ def clipper(cluster_name, cultures, exp_color='orange', con_color='black',
 
     fig.suptitle(f'Кластер {cluster_name}', fontsize=24)
     plt.tight_layout()
-    plt.savefig(f'graphs/clipped/{cluster_name}.png', dpi = 300, bbox_inches = 'tight')
+    plt.savefig(f'graphs/clipped/clipped{added_path}/{cluster_name}.png', dpi = 300, bbox_inches = 'tight')
 
 if __name__ == '__main__':
-    clipper('test_cluster', ['P-Mw-PET-2_8rec-bt-433-M', 'P-Mw-PET-1-sf-ab-389-D', 'P-Mw-PET-1-bt-ab-387-D'])
+    clipper('test_cluster', ['P-Mw-PET-2_8rec-bt-433-M', 'P-Mw-PET-1-sf-ab-389-D', 'P-Mw-PET-1-bt-ab-387-D'], added_path=' (clusters by area)')
