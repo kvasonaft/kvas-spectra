@@ -17,7 +17,7 @@ drop_culture = []
 
 def core(target = target, drop_culture=drop_culture, indicators_on_pictures=False, 
          delta=20, color_con='black', color_exp='orange', plot=True, square=True, 
-         baseline_square='horizontal_full', savgol_window=21):
+         baseline_square_ext='horizontal_full', savgol_window=21, prominence=None, hatch=False):
 
     logging.basicConfig(filename = 'data/log.txt', filemode = 'w', 
                         format = '%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
@@ -75,7 +75,8 @@ def core(target = target, drop_culture=drop_culture, indicators_on_pictures=Fals
 
                             results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=delta, 
                                                                     color=color_con, plot=plot, square=square, 
-                                                                    baseline_square=baseline_square, savgol_window=savgol_window)
+                                                                    baseline_square=baseline_square_ext, savgol_window=savgol_window, 
+                                                                    prominence=prominence, hatch=hatch)
 
                             area_row = {'Sample': sample}
                             for t, a in zip(results['target'], results['area']):
@@ -102,7 +103,8 @@ def core(target = target, drop_culture=drop_culture, indicators_on_pictures=Fals
 
                             results = peaks_finder_3.peaks_finder_3(waves, absorption, targets=target, ax=ax, delta=delta, 
                                                                     color=color_exp, plot=plot, square=square, 
-                                                                    baseline_square=baseline_square, savgol_window=savgol_window)
+                                                                    baseline_square=baseline_square_ext, savgol_window=savgol_window, 
+                                                                    prominence=prominence, hatch=hatch)
 
                             area_row = {'Sample': sample}
                             for t, a in zip(results['target'], results['area']):
@@ -205,7 +207,7 @@ def core(target = target, drop_culture=drop_culture, indicators_on_pictures=Fals
 
         logging.info('График успешно сохранён.')
 
-        # break
+        break
 
     try:
 
@@ -232,6 +234,4 @@ def core(target = target, drop_culture=drop_culture, indicators_on_pictures=Fals
 
 if __name__ == '__main__':
     
-    core(target = target, drop_culture=drop_culture, indicators_on_pictures=True, 
-         delta=20, color_con='black', color_exp='orange', plot=True, square=True, 
-         baseline_square='horizontal_full', savgol_window=21)
+    core(target = target, drop_culture=drop_culture, indicators_on_pictures=False, square=True)
